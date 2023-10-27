@@ -58,7 +58,7 @@ jobs:
         timeout-minutes: 5
         env:
           PYTRAINER_ALCHEMYURL: ${{ matrix.database_url }}
-          TZ: Europe/Kaliningrad
+          TZ: America/Toronto
           LC_TIME: C
         run: xvfb-run python3 -Wall -m unittest
 
