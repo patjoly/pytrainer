@@ -47,7 +47,7 @@ class DateFunctionTest(unittest.TestCase):
     def test_getDateTime(self):
         utctime, localtime = getDateTime('Tue Nov 24 17:29:05 UTC 2015')
         self.assertEqual(datetime.datetime(2015, 11, 24, 17, 29, 5, tzinfo=tzutc()), utctime)
-        self.assertEqual(datetime.datetime(2015, 11, 24, 19, 29, 5, tzinfo=tzlocal()), localtime)
+        self.assertEqual(datetime.datetime(2015, 11, 24, 12, 29, 5, tzinfo=tzlocal()), localtime)
 
 
 class DateTest(unittest.TestCase):

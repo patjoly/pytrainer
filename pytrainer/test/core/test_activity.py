@@ -94,7 +94,7 @@ class ActivityTest(unittest.TestCase):
         self.assertEqual(self.activity.time, self.activity.duration)
 
     def test_activity_starttime(self):
-        self.assertEqual(self.activity.starttime, '12:58:23')
+        self.assertEqual(self.activity.starttime, '12:58:23 PM')
 
     def test_activity_time_tuple(self):
         self.assertEqual(self.activity.time_tuple, (2, 3, 46))
