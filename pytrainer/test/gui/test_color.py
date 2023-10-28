@@ -19,6 +19,8 @@
 import unittest
 
 try:
+    import gi
+    gi.require_version('Gdk', '3.0')
     from gi.repository import Gdk
     GDK_AVAILABLE = True
 except ImportError:
