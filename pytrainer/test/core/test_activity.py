@@ -16,6 +16,7 @@
 
 import unittest
 import datetime
+import warnings
 from unittest.mock import Mock
 from dateutil.tz import tzoffset
 from sqlalchemy.orm.exc import NoResultFound
@@ -85,13 +86,16 @@ class ActivityTest(unittest.TestCase):
         self.assertEqual(self.activity.distance, 46.18)
 
     def test_activity_sport_name(self):
-        self.assertEqual(self.activity.sport_name, 'Mountain Bike')
+        self.assertEqual(self.activity.sport.name, 'Mountain Bike')
 
     def test_activity_duration(self):
         self.assertEqual(self.activity.duration, 7426)
 
     def test_activity_time(self):
-        self.assertEqual(self.activity.time, self.activity.duration)
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+        activity_time = self.activity.time
+        warnings.resetwarnings
+        self.assertEqual(activity_time, self.activity.duration)
 
     def test_activity_starttime(self):
         self.assertEqual(self.activity.starttime, '12:58:23 PM')
@@ -101,8 +105,13 @@ class ActivityTest(unittest.TestCase):
 
     def test_activity_lap(self):
         self.maxDiff = None
+        # should we really test a deprecated accessor?
+        # we already test each attribute below
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+        lap_dict = self.activity.laps[0]
+        warnings.resetwarnings
         self.assertEqual(
-            self.activity.laps[0],
+            lap_dict,
             {
                 'distance': 46181.9,
                 'end_lon': None,
@@ -131,6 +140,13 @@ class ActivityTest(unittest.TestCase):
         self.assertEqual(lap.lap_number, 0)
         self.assertEqual(lap.intensity, u'active')
         self.assertEqual(lap.laptrigger, Laptrigger.MANUAL)
+        self.assertEqual(lap.record, 1)
+        self.assertEqual(lap.comments,  None)
+        self.assertEqual(lap.max_speed, None)
+        self.assertEqual(lap.start_lat, None)
+        self.assertEqual(lap.start_lon, None)
+        self.assertEqual(lap.end_lat,   None)
+        self.assertEqual(lap.end_lon,   None)
 
     def test_activity_get_value_f(self):
         self.assertEqual(self.activity.get_value_f('distance', "%0.2f"), '46.18')
@@ -156,7 +172,9 @@ class ActivityTest(unittest.TestCase):
         self.assertEqual(self.activity.get_value_f('unegative', "%0.2f"), '1850.66')
 
     def test_activity_service_null(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         none_activity = self.service.get_activity(None)
+        warnings.resetwarnings
         self.assertIsNone(none_activity.id)
 
     def test_activity_remove(self):
