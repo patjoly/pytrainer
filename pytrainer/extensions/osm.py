@@ -282,6 +282,7 @@ class Osm:
         
         content = '''<html>
         <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
             <!-- bring in the OpenLayers javascript library
                  (here we bring it from the remote site, but you could
                  easily serve up this javascript yourself) -->
@@ -303,6 +304,9 @@ class Osm:
         try:
             lapsContent=''
             for lap in laps[:500]:  # OpenLayers with firefox is limited to 500 markers -> TODO: Transfer to a constant somewhere ?
+                if lap['end_lat']==None or lap['end_lon']==None:    # skip if no end of lap coords
+                    continue
+
                 lapNumber = int(lap['lap_number'])+1
                 elapsedTime = float(lap['elapsed_time'])
                 elapsedTimeHours = int(elapsedTime/3600)
