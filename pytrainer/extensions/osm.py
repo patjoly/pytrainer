@@ -32,6 +32,13 @@ class Osm:
         self.uc = UC()
         logging.debug("<<")
 
+        thunderforest_fname = os.path.join(self.pytrainer_main.environment.conf_dir, '.thunderforest')
+        if os.path.isfile(thunderforest_fname):
+            with open(thunderforest_fname, 'r') as f:
+                self.thunderforest_api_key = f.read().strip()
+        else:
+            self.thunderforest_api_key = None
+
     def download(self,url,localfile):
         """Copy the contents of a file from a given URL to pytrainer's tmpdir
         """    
@@ -399,9 +406,33 @@ class Osm:
                     }
 
                 //Add open street maps layers
-                layerMapnik = new OpenLayers.Layer.OSM.Mapnik("Mapnik");
+                var layerMapnik = new OpenLayers.Layer.OSM.Mapnik("Mapnik");
                 map.addLayer(layerMapnik);
+            '''
 
+        if self.thunderforest_api_key != None:
+            content+='''
+                var layerOCM = new OpenLayers.Layer.OSM("OpenCycleMap",    [
+                    "https://tile.thunderforest.com/cycle/${z}/${x}/${y}.png?apikey='''
+            content+=self.thunderforest_api_key
+            content+='''"
+                ] );
+                var layerOutdoors = new OpenLayers.Layer.OSM("Outdoors",   [
+                    "https://tile.thunderforest.com/outdoors/${z}/${x}/${y}.png?apikey='''
+            content+=self.thunderforest_api_key
+            content+='''"
+                ] );
+                var layerLandscape = new OpenLayers.Layer.OSM("Landscape", [
+                    "https://tile.thunderforest.com/landscape/${z}/${x}/${y}.png?apikey='''
+            content+=self.thunderforest_api_key
+            content+='''"
+                ] );
+                map.addLayer(layerOCM);
+                map.addLayer(layerOutdoors);
+                map.addLayer(layerLandscape);
+            '''
+
+        content+='''
                 //Create vector layer to add the data on to
                 var vector_layer = new OpenLayers.Layer.Vector();
                 vector_layer.setName('Track');
