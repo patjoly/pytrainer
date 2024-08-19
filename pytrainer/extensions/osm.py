@@ -14,6 +14,19 @@ import pytrainer.lib.points as Points
 from pytrainer.lib.fileUtils import fileUtils
 from pytrainer.lib.uc import UC
 
+def _isInBoundingBox( box, lat, lon, enlarge=None ):
+    box = box.copy()
+    if enlarge:
+        for coord in ['min_lat', 'min_lon']:
+            box[coord] = box[coord] - enlarge     # e.g. - 0.01
+        for coord in ['max_lat', 'max_lon']:
+            box[coord] = box[coord] + enlarge     # e.g. + 0.01
+
+    if lat < box['min_lat'] or lat > box['max_lat']:
+        return False
+    if lon < box['min_lon'] or lon > box['max_lon']:
+        return False
+    return True
 
 class Osm:
     # Default URLS
@@ -81,7 +94,7 @@ class Osm:
             logging.error("(%s) Error while downloading %s to local cache, using default hosted file instead." \
                            % (str(e), self.URLS[localfile]))
         logging.debug("<<")
-    
+
     def drawMap(self, activity, linetype):
         '''Draw OSM map
         create HTML file using Open Layers and Open Street Map
@@ -96,12 +109,28 @@ class Osm:
 
         try :
             list_values = activity.tracks
+            bounding_box = {}
+            bounding_box['min_lat'] = None
+            bounding_box['min_lon'] = None
+            bounding_box['max_lat'] = None
+            bounding_box['max_lon'] = None
+
             if list_values is not None and list_values != [] and len(list_values) > 0:
                 for i in list_values:
                     lat, lon = float(i[4]), float(i[5])
                     pointlist.append((lat,lon))
                     polyline.append("[%s, %s]" % (lon, lat))
                     attrlist.append((i[3],i[6])) # (Speed, HR)
+
+                    if bounding_box['min_lat'] == None or lat < bounding_box['min_lat']:
+                        bounding_box['min_lat'] = lat
+                    if bounding_box['min_lon'] == None or lon < bounding_box['min_lon']:
+                        bounding_box['min_lon'] = lon
+                    if bounding_box['max_lat'] == None or lat > bounding_box['max_lat']:
+                        bounding_box['max_lat'] = lat
+                    if bounding_box['max_lon'] == None or lon > bounding_box['max_lon']:
+                        bounding_box['max_lon'] = lon
+
                 points,levels = Points.encodePoints(pointlist)
                 points = points.replace("\\","\\\\")
                 laps = activity.laps
@@ -114,7 +143,7 @@ class Osm:
                 startinfo = html.escape(startinfo) #Encode for html
                 finishinfo = html.escape(finishinfo) #Encode for html
 
-                self.createHtml_osm(polyline, startinfo, finishinfo, laps, attrlist, linetype)
+                self.createHtml_osm(polyline, startinfo, finishinfo, laps, attrlist, linetype, bounding_box)
             else:
                 self.createErrorHtml()
         except Exception as e:
@@ -278,7 +307,7 @@ class Osm:
         file.run()
         return self.htmlfile
         
-    def createHtml_osm(self, polyline, startinfo, finishinfo, laps, attrlist, linetype):
+    def createHtml_osm(self, polyline, startinfo, finishinfo, laps, attrlist, linetype, bounding_box):
         '''
         Generate OSM map html file using MapLayers
         '''
@@ -339,6 +368,40 @@ class Osm:
         except Exception as e:
             # If something breaks here just skip laps data
             logging.error('Error formating laps data: ' + str(e))
+
+        # insert waypoints if any
+        wpts = self.waypoint.getAllWaypoints()
+        try:
+            wayContent=''
+            for pt in wpts[:500]:
+                if pt[1]==None or pt[2]==None:      # skip if no coordinates
+                    continue
+                ptNumber = int(pt[0])
+                ptLat = float(pt[1])
+                ptLon = float(pt[2])
+
+                if not _isInBoundingBox( bounding_box, ptLat, ptLon, enlarge=.01 ):
+                    continue
+
+                # build popup html string
+                popInfo = "<div class='info_content'>"
+                if pt[6] != None:                   # name
+                    popInfo += "%s<br>" % pt[6]
+                if pt[4] != None:                   # description
+                    popInfo += "%s<br>" % pt[4]
+                if pt[3] != None:                   # elevation
+                    popInfo += "Elevation: %d<br>" % float(pt[3])
+                popInfo += "</div>"
+
+                wayContent+=',\n'
+                wayContent+='\t\t\t\t\tpt%d: { url : "/waypoint_marker.png", coordinates : [%f,%f], popupInfo: "%s" }' % \
+                        (ptNumber, ptLon, ptLat, popInfo )
+
+            content+=wayContent
+        except Exception as e:
+            # If something breaks here just skip waypoints data
+            logging.error('Error formating waypoints data: ' + str(e))
+
         # Insert start/finish track markers
         content+=''',\n        start : { url : "/start.png", coordinates : %s, popupInfo : "%s" },
                     finish : { url : "/finish.png", coordinates : %s, popupInfo : "%s" },
