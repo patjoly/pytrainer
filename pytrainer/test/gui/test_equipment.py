@@ -3,6 +3,8 @@ import unittest
 from unittest.mock import Mock
 
 try:
+    import gi
+    gi.require_version('Gtk', '3.0')
     from gi.repository import Gtk
     GTK_AVAILABLE = True
 except ImportError:
