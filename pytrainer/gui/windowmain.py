@@ -510,7 +510,7 @@ class Main(SimpleBuilderApp):
                     liststore, activity = data
                     liststore[path][12] = new_text
                     activity.Laps[int(path)].comments = new_text
-                    self.pytrainer_main.ddbb.session.commit()
+                    self.pytrainer_main.ddbb.session_scope().commit()
 
                 def show_tooltip(widget, x, y, keyboard_mode, tooltip, user_param1):
                      path = self.lapsTreeView.get_path_at_pos(x,y-20)
@@ -887,7 +887,7 @@ class Main(SimpleBuilderApp):
             percentage = widget.get_value() / 100
         else:
             percentage = .05
-        records = self.pytrainer_main.ddbb.session.query(Activity).filter(and_(Activity.distance.between(activity.distance * (1-percentage), activity.distance * (1+percentage)), Activity.sport == activity.sport)).all()
+        records = self.pytrainer_main.ddbb.session_scope().query(Activity).filter(and_(Activity.distance.between(activity.distance * (1-percentage), activity.distance * (1+percentage)), Activity.sport == activity.sport)).all()
 
         count = 1
         for r in records:

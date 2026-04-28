@@ -44,7 +44,7 @@ class Stats:
             data[f] = 0
 
         stmt = select(Activity)
-        with self.pytrainer_main.ddbb.session as session:
+        with self.pytrainer_main.ddbb.session_scope() as session:
             result = session.execute(stmt)
             rows   = result.unique().scalars().all()
 

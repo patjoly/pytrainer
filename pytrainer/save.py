@@ -69,7 +69,7 @@ class Save(object):
                 yield value
 
     def _read_activities(self):
-        for activity in self.ddbb.session.query(Activity).order_by(Activity.date_time_utc):
+        for activity in self.ddbb.session_scope().query(Activity).order_by(Activity.date_time_utc):
             yield self._convert_activity(activity)
 
     def run(self):

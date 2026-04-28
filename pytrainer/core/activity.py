@@ -146,7 +146,7 @@ class ActivityService:
         else:
             logging.debug("Activity NOT found in pool")
             stmt = select(Activity).where(Activity.id == id)
-            with self.pytrainer_main.ddbb.session as session:
+            with self.pytrainer_main.ddbb.session_scope() as session:
                 result = session.execute(stmt)
                 self.pool[sid] = result.unique().scalars().one()
                 self.pool_queue.append(sid)
@@ -164,7 +164,7 @@ class ActivityService:
         if not activity.id:
             raise ActivityServiceException("Cannot remove activity which has not been stored: '{0}'.".format(activity.name))
         try:
-            with self.pytrainer_main.ddbb.session as session:
+            with self.pytrainer_main.ddbb.session_scope() as session:
                 self.remove_activity_from_cache(activity.id)
                 activity = session.get(Activity, activity.id)
                 if activity:
@@ -189,7 +189,7 @@ class ActivityService:
             stmt = select(Activity).options(joinedload(Activity.Laps)).where(Activity.date == date)
         else:
             stmt = select(Activity).options(joinedload(Activity.Laps)).where(and_(Activity.date == date, Activity.sport == sport))
-        with self.pytrainer_main.ddbb.session as session:
+        with self.pytrainer_main.ddbb.session_scope() as session:
             result = session.execute(stmt)
             activities = result.unique().scalars().all()
             for activity in activities:
@@ -209,7 +209,7 @@ Does not add them to the cache."""
             stmt = select(Activity).where(Activity.date.between(date_range.start_date, date_range.end_date))
         else:
             stmt = select(Activity).where(and_(Activity.date.between(date_range.start_date, date_range.end_date), Activity.sport == sport))
-        with self.pytrainer_main.ddbb.session as session:
+        with self.pytrainer_main.ddbb.session_scope() as session:
             result = session.execute(stmt)
             return result.unique().scalars().all()
 
@@ -217,7 +217,7 @@ Does not add them to the cache."""
         """Iterates over all activities ordered by date"""
 
         stmt = select(Activity).order_by('date')
-        with self.pytrainer_main.ddbb.session as session:
+        with self.pytrainer_main.ddbb.session_scope() as session:
             result = session.execute(stmt)
             return result.unique().scalars().all()
 

@@ -25,6 +25,7 @@ import os
 from sqlalchemy import create_engine, select, Table, Column, ForeignKey, Integer
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from sqlalchemy.types import TypeDecorator
+from contextlib import contextmanager
 
 from pytrainer.util.color import color_from_hex_string
 from pytrainer.lib.singleton import Singleton
@@ -72,11 +73,26 @@ if no url is provided"""
 
         if not self.engine:
             self.engine = create_engine(self.url, logging_name='db')
-            self.sessionmaker.configure(bind=self.engine)
+            self.sessionmaker.configure(
+                bind=self.engine,
+                expire_on_commit=False
+            )
         logging.info("DDBB created with url %s", self.url)
 
     def get_connection_url(self):
         return self.url
+
+    @contextmanager
+    def session_scope(self):
+        session = self.sessionmaker()
+        try:
+            yield session
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def connect(self):
         self.session = self.sessionmaker()
