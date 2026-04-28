@@ -20,6 +20,7 @@ from pytrainer.util.color import Color, color_from_hex_string
 from pytrainer.lib.ddbb import DeclarativeBase, ForcedInteger
 from sqlalchemy import Column, Integer, Float, Unicode, CheckConstraint, select
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import validates
 from sqlalchemy.exc import InvalidRequestError, IntegrityError, StatementError
 import sqlalchemy.types as types
 import logging
@@ -53,6 +54,30 @@ class Sport(DeclarativeBase):
         self.max_pace = None
         self.color = Color(0x0000ff)
         super(Sport, self).__init__(**kwargs)
+
+    @validates('max_pace', 'id')
+    def validate_integers(self, key, value):
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            raise
+
+    @validates('met', 'weight')
+    def validate_floats(self, key, value):
+        if value is None:
+            return None
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            raise
+
+    @validates('name')
+    def validate_strings(self, key, value):
+        if value is None:
+            return u''
+        return str(value)
 
     def __eq__(self, other):
         if not isinstance(other, Sport):

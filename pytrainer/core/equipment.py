@@ -20,7 +20,7 @@ import logging
 from pytrainer.core.activity import Activity
 from pytrainer.lib.ddbb import DeclarativeBase, ForcedInteger
 from sqlalchemy import Column, Boolean, UnicodeText, Integer, Unicode, select, func
-from sqlalchemy.orm import exc
+from sqlalchemy.orm import exc, validates
 from sqlalchemy.exc import IntegrityError
 
 class Equipment(DeclarativeBase):
@@ -41,6 +41,21 @@ class Equipment(DeclarativeBase):
        self.prior_usage = 0
        self.notes = u""
        super(Equipment, self).__init__(**kwargs)
+
+   @validates('life_expectancy', 'prior_usage', 'id')
+   def validate_integers(self, key, value):
+       if value is None:
+           return None
+       try:
+           return int(value)
+       except (TypeError, ValueError):
+           raise
+
+   @validates('description', 'notes')
+   def validate_strings(self, key, value):
+       if value is None:
+           return u''
+       return str(value)
 
    def __eq__(self, o):
        if isinstance(o, Equipment):
