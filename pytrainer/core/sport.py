@@ -114,7 +114,7 @@ class SportService:
         if sport_id is None:
             raise ValueError("Sport id cannot be None")
         stmt = select(Sport).where(Sport.id == sport_id)
-        with self._ddbb.session as session:
+        with self._ddbb.session_scope() as session:
             result = session.execute(stmt)
             try:
                 return result.scalar_one()
@@ -128,7 +128,7 @@ class SportService:
         if name is None:
             raise ValueError("Sport name cannot be None")
         stmt = select(Sport).where(Sport.name == name)
-        with self._ddbb.session as session:
+        with self._ddbb.session_scope() as session:
             result = session.execute(stmt)
             try:
                 return result.scalar_one()
@@ -138,7 +138,7 @@ class SportService:
     def get_all_sports(self):
         """Get all stored sports."""
         stmt = select(Sport)
-        with self._ddbb.session as session:
+        with self._ddbb.session_scope() as session:
             result = session.execute(stmt)
             return result.scalars().all()
 
@@ -147,7 +147,7 @@ class SportService:
 
         The stored object is returned."""
         try:
-            with self._ddbb.session as session:
+            with self._ddbb.session_scope() as session:
                 session.add(sport)
                 session.commit()
                 session.refresh(sport)
@@ -163,7 +163,7 @@ class SportService:
         if not sport.id:
             raise SportServiceException("Cannot remove sport which has not been stored: '{0}'.".format(sport.name))
         try:
-            with self._ddbb.session as session:
+            with self._ddbb.session_scope() as session:
                 session.delete(sport)
                 session.commit()
         except InvalidRequestError:

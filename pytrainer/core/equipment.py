@@ -87,7 +87,7 @@ class EquipmentService:
        """Get all equipment items."""
 
        stmt = select(Equipment)
-       with self._ddbb.session as session:
+       with self._ddbb.session_scope() as session:
            result = session.execute(stmt)
            return result.scalars().all()
 
@@ -95,7 +95,7 @@ class EquipmentService:
        """Get all the active equipment items."""
 
        stmt = select(Equipment).where(Equipment.active == True)
-       with self._ddbb.session as session:
+       with self._ddbb.session_scope() as session:
            result = session.execute(stmt)
            return result.scalars().all()
 
@@ -106,7 +106,7 @@ class EquipmentService:
        """
 
        stmt = select(Equipment).where(Equipment.id == item_id)
-       with self._ddbb.session as session:
+       with self._ddbb.session_scope() as session:
            result = session.execute(stmt)
            try:
                return result.scalar_one()
@@ -119,7 +119,7 @@ class EquipmentService:
        The stored object is returned."""
        logging.debug("Storing equipment item.")
 
-       with self._ddbb.session as session:
+       with self._ddbb.session_scope() as session:
            try:
                 session.add(equipment)
                 session.commit()
@@ -133,7 +133,7 @@ class EquipmentService:
        """Remove an existing equipment item."""
        logging.debug("Deleting equipment item with id: '{0}'".format(equipment.id))
 
-       with self._ddbb.session as session:
+       with self._ddbb.session_scope() as session:
             session.delete(equipment)
             session.commit()
 
@@ -141,7 +141,7 @@ class EquipmentService:
        """Get the total use of the given equipment."""
 
        stmt = select(func.sum(Activity.distance).label('sum')).where(Activity.equipment.contains(equipment))
-       with self._ddbb.session as session:
+       with self._ddbb.session_scope() as session:
            result = session.execute(stmt)
            usage  = result.scalar()
        return (0 if usage is None else float(usage)) + equipment.prior_usage
