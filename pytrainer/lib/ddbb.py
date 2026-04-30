@@ -23,14 +23,15 @@ import logging
 import os
 
 from sqlalchemy import create_engine, select, Table, Column, ForeignKey, Integer
-from sqlalchemy.orm import sessionmaker, Session, declarative_base
+from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
 from sqlalchemy.types import TypeDecorator
 from contextlib import contextmanager
 
 from pytrainer.util.color import color_from_hex_string
 from pytrainer.lib.singleton import Singleton
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 record_to_equipment = Table('record_equipment', Base.metadata,
                             Column('id', Integer, primary_key=True),
