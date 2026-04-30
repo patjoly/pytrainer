@@ -17,7 +17,7 @@
 #Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 from pytrainer.util.color import Color, color_from_hex_string
-from pytrainer.lib.ddbb import DeclarativeBase, ForcedInteger
+from pytrainer.lib.ddbb import Base, ForcedInteger
 from sqlalchemy import Column, Integer, Float, Unicode, CheckConstraint, select
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import validates
@@ -36,7 +36,7 @@ class ColorType(types.TypeDecorator):
     def process_result_value(self, value, dialect):
         return color_from_hex_string(value)
 
-class Sport(DeclarativeBase):
+class Sport(Base):
     """A type of exercise. For example: "running" or "cycling"."""
 
     __tablename__ = 'sports'

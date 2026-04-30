@@ -30,9 +30,9 @@ from contextlib import contextmanager
 from pytrainer.util.color import color_from_hex_string
 from pytrainer.lib.singleton import Singleton
 
-DeclarativeBase = declarative_base()
+Base = declarative_base()
 
-record_to_equipment = Table('record_equipment', DeclarativeBase.metadata,
+record_to_equipment = Table('record_equipment', Base.metadata,
                             Column('id', Integer, primary_key=True),
                             Column('equipment_id', Integer,
                                    ForeignKey('equipment.id'),
@@ -108,7 +108,7 @@ if no url is provided"""
         from pytrainer.waypoint import Waypoint
         from pytrainer.core.activity import Lap
         from pytrainer.athlete import Athletestat
-        DeclarativeBase.metadata.create_all(self.engine)
+        Base.metadata.create_all(self.engine)
 
         if add_default:
             with Session(self.engine) as session:
@@ -122,7 +122,7 @@ if no url is provided"""
 
     def drop_tables(self):
         """Drop the database schema"""
-        DeclarativeBase.metadata.drop_all(self.engine)
+        Base.metadata.drop_all(self.engine)
 
     def create_backup(self):
         """Create a backup of the current database."""

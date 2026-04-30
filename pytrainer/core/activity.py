@@ -34,7 +34,7 @@ from pytrainer.lib.gpx import Gpx
 from pytrainer.environment import Environment
 from pytrainer.lib import uc
 from pytrainer.profile import Profile
-from pytrainer.lib.ddbb import DeclarativeBase, ForcedInteger, record_to_equipment
+from pytrainer.lib.ddbb import Base, ForcedInteger, record_to_equipment
 
 class Laptrigger(enum.Enum):
     MANUAL = 'manual'
@@ -43,7 +43,7 @@ class Laptrigger(enum.Enum):
     TIME = 'time'
     HEARTRATE = 'hr'
 
-class Lap(DeclarativeBase):
+class Lap(Base):
     __tablename__ = 'laps'
     avg_hr = Column(ForcedInteger)
     calories = Column(ForcedInteger)
@@ -221,7 +221,7 @@ Does not add them to the cache."""
             result = session.execute(stmt)
             return result.unique().scalars().all()
 
-class Activity(DeclarativeBase):
+class Activity(Base):
     '''
     Class that knows everything about a particular activity
 

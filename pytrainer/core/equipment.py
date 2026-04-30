@@ -18,12 +18,12 @@
 
 import logging
 from pytrainer.core.activity import Activity
-from pytrainer.lib.ddbb import DeclarativeBase, ForcedInteger
+from pytrainer.lib.ddbb import Base, ForcedInteger
 from sqlalchemy import Column, Boolean, UnicodeText, Integer, Unicode, select, func
 from sqlalchemy.orm import exc, validates
 from sqlalchemy.exc import IntegrityError
 
-class Equipment(DeclarativeBase):
+class Equipment(Base):
    """An equipment item that can be used during an activity, such as a pair of running shoes."""
 
    __tablename__ = 'equipment'

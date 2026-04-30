@@ -21,7 +21,7 @@ from unittest.mock import Mock
 from dateutil.tz import tzoffset
 from sqlalchemy.orm.exc import NoResultFound
 
-from pytrainer.lib.ddbb import DDBB, DeclarativeBase
+from pytrainer.lib.ddbb import DDBB, Base
 from pytrainer.profile import Profile
 from pytrainer.lib.uc import UC
 from pytrainer.core.activity import ActivityService, Laptrigger
@@ -39,7 +39,7 @@ class ActivityTest(unittest.TestCase):
         self.uc = UC()
         self.uc.set_us(False)
         self.service = ActivityService(pytrainer_main=main)
-        records_table = DeclarativeBase.metadata.tables['records']
+        records_table = Base.metadata.tables['records']
         self.ddbb.session.execute(records_table.insert(), {
             'distance': 46.18,
             'maxspeed': 44.6695617695,
@@ -59,7 +59,7 @@ class ActivityTest(unittest.TestCase):
             'sport': 1,
             'maxbeats': 120.0})
 
-        laps_table = DeclarativeBase.metadata.tables['laps']
+        laps_table = Base.metadata.tables['laps']
         self.ddbb.session.execute(laps_table.insert(), {
             'distance': 46181.9,
             'lap_number': 0,

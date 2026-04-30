@@ -20,7 +20,7 @@ import unittest
 import sys
 from pytrainer.core.equipment import Equipment, EquipmentService,\
     EquipmentServiceException
-from pytrainer.lib.ddbb import DDBB, DeclarativeBase
+from pytrainer.lib.ddbb import DDBB, Base
 from sqlalchemy.exc import StatementError, IntegrityError, ProgrammingError, OperationalError, DataError
 
 class EquipmentTest(unittest.TestCase):
@@ -192,7 +192,7 @@ class EquipmentServiceTest(unittest.TestCase):
         self.mock_ddbb.connect()
         self.mock_ddbb.create_tables()
         self.equipment_service = EquipmentService(self.mock_ddbb)
-        self.equipment_table = DeclarativeBase.metadata.tables['equipment']
+        self.equipment_table = Base.metadata.tables['equipment']
         
     def tearDown(self):
         self.mock_ddbb.disconnect()
@@ -347,8 +347,8 @@ class EquipmentServiceTest(unittest.TestCase):
                                            "prior_usage": 0, "active": True})
         self.mock_ddbb.session.commit()
 
-        record_table = DeclarativeBase.metadata.tables['records']
-        record_to_equipment = DeclarativeBase.metadata.tables['record_equipment']
+        record_table = Base.metadata.tables['records']
+        record_to_equipment = Base.metadata.tables['record_equipment']
         self.mock_ddbb.session.execute(record_table.insert(),
                                        {
                                            "sport": 1,

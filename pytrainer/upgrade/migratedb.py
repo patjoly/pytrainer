@@ -22,10 +22,10 @@ from sqlalchemy.exc import NoSuchTableError, OperationalError
 from sqlalchemy.sql.expression import func
 from sqlalchemy.schema import MetaData
 
-from pytrainer.lib.ddbb import DeclarativeBase
+from pytrainer.lib.ddbb import Base
 
 
-class MigrateVersion(DeclarativeBase):
+class MigrateVersion(Base):
     __tablename__ = 'migrate_version'
 
     repository_id = sqlalchemy.Column(sqlalchemy.String(250), primary_key=True)
