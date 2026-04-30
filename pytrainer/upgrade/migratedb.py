@@ -69,7 +69,8 @@ class MigratableDb:
         """Get the current version of the versioned DB.
 
         Raises OperationError if the DB is not initialized."""
-        latest = self.ddbb.session.query(func.max(MigrateVersion.version)).one()
+        with self.ddbb.session_scope() as session:
+            latest = session.query(func.max(MigrateVersion.version)).one()
         return latest[0]
 
     def get_upgrade_version(self):
@@ -80,14 +81,15 @@ class MigratableDb:
         """Initialize the database with migrate metadata.
 
         Raises DatabaseAlreadyControlledError if the DB is already initialized."""
-        self.ddbb.session.add(
-            MigrateVersion(
-                repository_id='pytrainer',
-                repository_path='/usr/lib/python3/site-packages/pytrainer/upgrade',
-                version=15,
+        with self.ddbb.session_scope() as session:
+            session.add(
+                MigrateVersion(
+                    repository_id='pytrainer',
+                    repository_path='/usr/lib/python3/site-packages/pytrainer/upgrade',
+                    version=15,
+                    )
                 )
-            )
-        self.ddbb.session.commit()
+            session.commit()
 
     def upgrade(self):
         """Run all available upgrade scripts for the repository."""
