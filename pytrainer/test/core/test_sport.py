@@ -55,8 +55,8 @@ class SportTest(unittest.TestCase):
 
     def test_id_should_not_accept_non_integer_string(self):
         sport = Sport()
-        with self.assertRaises((IntegrityError, DataError, OperationalError)):
-            sport.id = "test"
+        with self.assertRaises((ValueError, IntegrityError, DataError, OperationalError)):
+            sport.id = 'test'
             self.ddbb.session.add(sport)
             self.ddbb.session.flush()
 
@@ -71,8 +71,8 @@ class SportTest(unittest.TestCase):
 
     def test_name_should_not_accept_none(self):
         sport = Sport()
-        sport.name = None
-        with self.assertRaises((IntegrityError, OperationalError)):
+        with self.assertRaises((ValueError, IntegrityError, OperationalError)):
+            sport.name = None
             self.ddbb.session.add(sport)
             self.ddbb.session.commit()
 
@@ -101,8 +101,8 @@ class SportTest(unittest.TestCase):
 
     def test_met_should_not_accept_non_float_string(self):
         sport = Sport()
-        sport.met = "22.5kg"
         with self.assertRaises((ValueError, StatementError)):
+            sport.met = '22.5kg'
             self.ddbb.session.add(sport)
             self.ddbb.session.flush()
 
@@ -138,8 +138,8 @@ class SportTest(unittest.TestCase):
 
     def test_weight_should_not_accept_non_float_string(self):
         sport = Sport()
-        sport.weight = "22.5kg"
-        with self.assertRaises(StatementError):
+        with self.assertRaises((ValueError, StatementError)):
+            sport.weight = '22.5kg'
             self.ddbb.session.add(sport)
             self.ddbb.session.flush()
 
@@ -179,8 +179,8 @@ class SportTest(unittest.TestCase):
 
     def test_max_pace_should_not_accept_non_integer_string(self):
         sport = Sport()
-        sport.max_pace = "225s"
         with self.assertRaises((ValueError, StatementError)):
+            sport.max_pace = '225s'
             self.ddbb.session.add(sport)
             self.ddbb.session.flush()
 

@@ -76,7 +76,7 @@ class Sport(Base):
     @validates('name')
     def validate_strings(self, key, value):
         if value is None:
-            return u''
+            raise ValueError
         return str(value)
 
     def __eq__(self, other):

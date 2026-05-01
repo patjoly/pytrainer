@@ -52,11 +52,9 @@ class EquipmentTest(unittest.TestCase):
 
     def test_id_set_to_non_numeric_string(self):
         equipment = Equipment()
-        equipment.id = "test"
         try:
-            self.ddbb.session.add(equipment)
-            self.ddbb.session.flush()
-        except (IntegrityError, OperationalError, DataError):
+            equipment.id = 'test'
+        except ValueError:
             pass
         else:
             self.fail("Should not be able to set equipment id to non numeric value.")
@@ -88,7 +86,7 @@ class EquipmentTest(unittest.TestCase):
             
     def test_active_set_to_non_boolean(self):
         equipment = Equipment()
-        equipment.active = "test"
+        equipment.active = 'test'
         self.ddbb.session.add(equipment)
         try:
             self.ddbb.session.commit()
@@ -114,11 +112,9 @@ class EquipmentTest(unittest.TestCase):
 
     def test_life_expectancy_set_to_non_numeric_string(self):
         equipment = Equipment()
-        equipment.life_expectancy = "test"
         try:
-            self.ddbb.session.add(equipment)
-            self.ddbb.session.flush()
-        except StatementError:
+            equipment.life_expectancy = 'test'
+        except ValueError:
             pass
         else:
             self.fail("Should not be able to set life expectancy to non numeric value.")
@@ -141,11 +137,9 @@ class EquipmentTest(unittest.TestCase):
 
     def test_prior_usage_set_to_non_numeric_string(self):
         equipment = Equipment()
-        equipment.prior_usage = "test"
         try:
-            self.ddbb.session.add(equipment)
-            self.ddbb.session.flush()
-        except StatementError:
+            equipment.prior_usage = "test"
+        except ValueError:
             pass
         else:
             self.fail("Should not be able to set life expectancy to non numeric value.")
