@@ -198,6 +198,8 @@ class EquipmentServiceTest(unittest.TestCase):
                                                 "notes": u"Test notes.",
                                            "description": u"Test Description",
                                            "prior_usage": 200, "active": True})
+        self.mock_ddbb.session.commit()
+
         item = self.equipment_service.get_equipment_item(1)
         self.assertEqual(1, item.id)
         self.assertEqual("Test Description", item.description)
@@ -212,6 +214,8 @@ class EquipmentServiceTest(unittest.TestCase):
                                                 "notes": u"Test notes.",
                                            "description": u"Test Description",
                                            "prior_usage": 200, "active": True})
+        self.mock_ddbb.session.commit()
+
         item = self.equipment_service.get_equipment_item(1)
         self.assertEqual("Test Description", item.description)
         self.assertEqual("Test notes.", item.notes)
@@ -231,6 +235,8 @@ class EquipmentServiceTest(unittest.TestCase):
                                                 "notes": u"Test notes 2.",
                                            "description": u"Test item 2",
                                            "prior_usage": 300, "active": False})
+        self.mock_ddbb.session.commit()
+
         items = self.equipment_service.get_all_equipment()
         item = items[0]
         self.assertEqual(1, item.id)
@@ -262,6 +268,8 @@ class EquipmentServiceTest(unittest.TestCase):
                                                 "notes": u"Test notes 2.",
                                            "description": u"Test item 2",
                                            "prior_usage": 300, "active": True})
+        self.mock_ddbb.session.commit()
+
         items = self.equipment_service.get_active_equipment()
         item = items[0]
         self.assertEqual(1, item.id)
@@ -295,6 +303,8 @@ class EquipmentServiceTest(unittest.TestCase):
                                                 "notes": u"Test notes.",
                                            "description": u"test item",
                                            "prior_usage": 200, "active": True})
+        self.mock_ddbb.session.commit()
+
         equipment = Equipment()
         equipment.description = u"test item"
         try:
@@ -324,6 +334,8 @@ class EquipmentServiceTest(unittest.TestCase):
                                                 "notes": u"Test notes.",
                                            "description": u"test item",
                                            "prior_usage": 200, "active": True})
+        self.mock_ddbb.session.commit()
+
         equipment = Equipment()
         equipment.id = 2
         equipment.description = u"test item"
@@ -365,6 +377,8 @@ class EquipmentServiceTest(unittest.TestCase):
                                                 "notes": u"Test notes.",
                                            "description": u"test item",
                                            "prior_usage": 0, "active": True})
+        self.mock_ddbb.session.commit()
+
         equipment = self.equipment_service.get_equipment_item(1)
         usage = self.equipment_service.get_equipment_usage(equipment)
         self.assertEqual(0, usage)
