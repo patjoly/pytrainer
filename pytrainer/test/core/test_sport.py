@@ -26,11 +26,9 @@ class SportTest(unittest.TestCase):
 
     def setUp(self):
         self.ddbb = DDBB()
-        self.ddbb.connect()
         self.ddbb.create_tables(add_default=False)
 
     def tearDown(self):
-        self.ddbb.disconnect()
         self.ddbb.drop_tables()
 
     def test_id_should_default_to_none(self):
@@ -45,9 +43,8 @@ class SportTest(unittest.TestCase):
     def test_id_should_accept_integer_string(self):
         sport = Sport()
         sport.id = "1"
-        self.ddbb.session.add(sport)
-        self.ddbb.session.commit()
-        with self.ddbb.session as session:
+        with self.ddbb.session_scope() as session:
+            session.add(sport)
             stmt = select(Sport).where(Sport.id == 1)
             result = session.execute(stmt)
             sport = result.scalars().one()
@@ -57,8 +54,10 @@ class SportTest(unittest.TestCase):
         sport = Sport()
         with self.assertRaises((ValueError, IntegrityError, DataError, OperationalError)):
             sport.id = 'test'
-            self.ddbb.session.add(sport)
-            self.ddbb.session.flush()
+            # validator will raise ValueError early i.e. just above, so not expected to get
+            # to the session scope below but keeping (in case we ever remove the validators)
+            with self.ddbb.session_scope() as session:
+                session.add(sport)
 
     def test_name_should_default_to_empty_string(self):
         sport = Sport()
@@ -73,8 +72,9 @@ class SportTest(unittest.TestCase):
         sport = Sport()
         with self.assertRaises((ValueError, IntegrityError, OperationalError)):
             sport.name = None
-            self.ddbb.session.add(sport)
-            self.ddbb.session.commit()
+            # ibid: about validator and ValueError
+            with self.ddbb.session_scope() as session:
+                session.add(sport)
 
     def test_met_should_default_to_None(self):
         sport = Sport()
@@ -83,17 +83,16 @@ class SportTest(unittest.TestCase):
     def test_met_should_accept_float(self):
         sport = Sport()
         sport.met = 22.5
-        self.ddbb.session.add(sport)
-        self.ddbb.session.flush()
+        with self.ddbb.session_scope() as session:
+            session.add(sport)
         self.assertEqual(22.5, sport.met)
 
     def test_met_should_accept_float_string(self):
         sport = Sport()
         sport.name = "test1"
         sport.met = "22.5"
-        self.ddbb.session.add(sport)
-        self.ddbb.session.commit()
-        with self.ddbb.session as session:
+        with self.ddbb.session_scope() as session:
+            session.add(sport)
             stmt = select(Sport).where(Sport.id == 1)
             result = session.execute(stmt)
             sport = result.scalars().one()
@@ -103,8 +102,9 @@ class SportTest(unittest.TestCase):
         sport = Sport()
         with self.assertRaises((ValueError, StatementError)):
             sport.met = '22.5kg'
-            self.ddbb.session.add(sport)
-            self.ddbb.session.flush()
+            # ibid: about validator and ValueError
+            with self.ddbb.session_scope() as session:
+                session.add(sport)
 
     def test_met_should_not_accept_negative_value(self):
         if self.ddbb.engine.name == 'mysql':
@@ -112,8 +112,8 @@ class SportTest(unittest.TestCase):
         sport = Sport()
         sport.met = -1
         with self.assertRaises((IntegrityError, InterfaceError)):
-            self.ddbb.session.add(sport)
-            self.ddbb.session.flush()
+            with self.ddbb.session_scope() as session:
+                session.add(sport)
 
     def test_met_should_accept_none(self):
         sport = Sport()
@@ -132,16 +132,17 @@ class SportTest(unittest.TestCase):
     def test_weight_should_accept_float_string(self):
         sport = Sport()
         sport.weight = "22.5"
-        self.ddbb.session.add(sport)
-        self.ddbb.session.commit()
+        with self.ddbb.session_scope() as session:
+            session.add(sport)
         self.assertEqual(22.5, sport.weight)
 
     def test_weight_should_not_accept_non_float_string(self):
         sport = Sport()
         with self.assertRaises((ValueError, StatementError)):
             sport.weight = '22.5kg'
-            self.ddbb.session.add(sport)
-            self.ddbb.session.flush()
+            # ibid: about validator and ValueError
+            with self.ddbb.session_scope() as session:
+                session.add(sport)
 
     def test_weight_should_not_accept_negative_value(self):
         if self.ddbb.engine.name == 'mysql':
@@ -149,15 +150,15 @@ class SportTest(unittest.TestCase):
         sport = Sport()
         sport.weight = -1
         with self.assertRaises((IntegrityError, InterfaceError)):
-            self.ddbb.session.add(sport)
-            self.ddbb.session.flush()
+            with self.ddbb.session_scope() as session:
+                session.add(sport)
 
     def test_weight_should_not_accept_none(self):
         sport = Sport()
         sport.weight = None
         with self.assertRaises((IntegrityError, OperationalError)):
-            self.ddbb.session.add(sport)
-            self.ddbb.session.flush()
+            with self.ddbb.session_scope() as session:
+                session.add(sport)
 
     def test_max_pace_should_default_to_none(self):
         sport = Sport()
@@ -166,30 +167,30 @@ class SportTest(unittest.TestCase):
     def test_max_pace_should_accept_integer(self):
         sport = Sport()
         sport.max_pace = 220
-        self.ddbb.session.add(sport)
-        self.ddbb.session.flush()
+        with self.ddbb.session_scope() as session:
+            session.add(sport)
         self.assertEqual(220, sport.max_pace)
 
     def test_max_pace_should_accept_integer_string(self):
         sport = Sport()
         sport.max_pace = "220"
-        self.ddbb.session.add(sport)
-        self.ddbb.session.commit()
+        with self.ddbb.session_scope() as session:
+            session.add(sport)
         self.assertEqual(220, sport.max_pace)
 
     def test_max_pace_should_not_accept_non_integer_string(self):
         sport = Sport()
         with self.assertRaises((ValueError, StatementError)):
+            # ibid: about validator and ValueError
             sport.max_pace = '225s'
-            self.ddbb.session.add(sport)
-            self.ddbb.session.flush()
+            with self.ddbb.session_scope() as session:
+                session.add(sport)
 
     def test_max_pace_should_take_floor_of_float(self):
         sport = Sport()
         sport.max_pace = 220.6
-        self.ddbb.session.add(sport)
-        self.ddbb.session.commit()
-        with self.ddbb.session as session:
+        with self.ddbb.session_scope() as session:
+            session.add(sport)
             stmt = select(Sport).where(Sport.id == 1)
             result = session.execute(stmt)
             sport = result.scalars().one()
@@ -201,8 +202,8 @@ class SportTest(unittest.TestCase):
         sport = Sport()
         sport.max_pace = -1
         with self.assertRaises((IntegrityError, InterfaceError)):
-            self.ddbb.session.add(sport)
-            self.ddbb.session.flush()
+            with self.ddbb.session_scope() as session:
+                session.add(sport)
 
     def test_max_pace_should_accept_none(self):
         sport = Sport()
@@ -217,20 +218,18 @@ class SportTest(unittest.TestCase):
         sport = Sport()
         sport.color = None
         with self.assertRaises(StatementError):
-            self.ddbb.session.add(sport)
-            self.ddbb.session.commit()
+            with self.ddbb.session_scope() as session:
+                session.add(sport)
 
 
 class SportServiceTest(unittest.TestCase):
 
     def setUp(self):
         self.mock_ddbb = DDBB()
-        self.mock_ddbb.connect()
         self.mock_ddbb.create_tables(add_default=False)
         self.sport_service = SportService(self.mock_ddbb)
 
     def tearDown(self):
-        self.mock_ddbb.disconnect()
         self.mock_ddbb.drop_tables()
 
     def test_store_sport_should_insert_row_when_sport_has_no_id(self):
