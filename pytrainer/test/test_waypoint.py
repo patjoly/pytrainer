@@ -27,13 +27,11 @@ class WaypointTest(unittest.TestCase):
         self.ddbb = DDBB()
         main = Mock()
         main.ddbb = self.ddbb
-        main.ddbb.connect()
         main.ddbb.create_tables(add_default=False)
         self.waypoint = WaypointService(parent=main)
 
     def tearDown(self):
         self.waypoint = None
-        self.ddbb.disconnect()
         self.ddbb.drop_tables()
 
     def test_waypoint_add_and_get(self):

@@ -28,7 +28,6 @@ class RecordTest(unittest.TestCase):
 
     def setUp(self):
         self.ddbb = DDBB()
-        self.ddbb.connect()
         self.ddbb.create_tables(add_default=True)
         self.main = Mock()
         self.main.ddbb = self.ddbb
@@ -68,7 +67,6 @@ class RecordTest(unittest.TestCase):
                       'laptrigger': u'manual'}]
 
     def tearDown(self):
-        self.ddbb.disconnect()
         self.ddbb.drop_tables()
 
     def test_insert_record(self):

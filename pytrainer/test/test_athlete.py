@@ -29,13 +29,11 @@ class AthleteTest(unittest.TestCase):
         main = Mock()
         main.ddbb = self.ddbb
         main.profile = Profile()
-        main.ddbb.connect()
         main.ddbb.create_tables(add_default=False)
         self.athlete = Athlete(parent=main)
 
     def tearDown(self):
         self.athlete = None
-        self.ddbb.disconnect()
         self.ddbb.drop_tables()
 
     def test_athlete_insert_and_get(self):
