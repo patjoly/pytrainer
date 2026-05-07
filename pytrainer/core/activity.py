@@ -36,6 +36,13 @@ from pytrainer.lib import uc
 from pytrainer.profile import Profile
 from pytrainer.lib.ddbb import Base, ForcedInteger, record_to_equipment
 
+def _activity_load_options():
+    return [
+        joinedload(Activity.equipment),
+        joinedload(Activity.Laps),
+        joinedload(Activity.sport),
+    ]
+
 class Laptrigger(enum.Enum):
     MANUAL = 'manual'
     DISTANCE = 'distance'
@@ -145,7 +152,8 @@ class ActivityService:
             self.pool_queue.append(sid)
         else:
             logging.debug("Activity NOT found in pool")
-            stmt = select(Activity).where(Activity.id == id)
+            stmt = select(Activity).options(*_activity_load_options()).where(Activity.id == id)
+
             with self.pytrainer_main.ddbb.session_scope() as session:
                 result = session.execute(stmt)
                 self.pool[sid] = result.unique().scalars().one()
@@ -186,9 +194,9 @@ class ActivityService:
         """Iterates the activities for a specific date, optionally restricted by Sport)"""
 
         if not sport:
-            stmt = select(Activity).options(joinedload(Activity.Laps)).where(Activity.date == date)
+            stmt = select(Activity).options(*_activity_load_options()).where(Activity.date == date)
         else:
-            stmt = select(Activity).options(joinedload(Activity.Laps)).where(and_(Activity.date == date, Activity.sport == sport))
+            stmt = select(Activity).options(*_activity_load_options()).where(and_(Activity.date == date, Activity.sport == sport))
         with self.pytrainer_main.ddbb.session_scope() as session:
             result = session.execute(stmt)
             activities = result.unique().scalars().all()
@@ -206,9 +214,9 @@ class ActivityService:
 Does not add them to the cache."""
 
         if not sport:
-            stmt = select(Activity).where(Activity.date.between(date_range.start_date, date_range.end_date))
+            stmt = select(Activity).options(*_activity_load_options()).where(Activity.date.between(date_range.start_date, date_range.end_date))
         else:
-            stmt = select(Activity).where(and_(Activity.date.between(date_range.start_date, date_range.end_date), Activity.sport == sport))
+            stmt = select(Activity).options(*_activity_load_options()).where(and_(Activity.date.between(date_range.start_date, date_range.end_date), Activity.sport == sport))
         with self.pytrainer_main.ddbb.session_scope() as session:
             result = session.execute(stmt)
             return result.unique().scalars().all()
@@ -216,7 +224,7 @@ Does not add them to the cache."""
     def get_all_activities(self):
         """Iterates over all activities ordered by date"""
 
-        stmt = select(Activity).order_by('date')
+        stmt = select(Activity).options(*_activity_load_options()).order_by('date')
         with self.pytrainer_main.ddbb.session_scope() as session:
             result = session.execute(stmt)
             return result.unique().scalars().all()
@@ -297,20 +305,20 @@ class Activity(Base):
                               backref=backref(
                                   "activities", order_by=date, cascade='all, delete-orphan'
                                   ),
-                              lazy='joined' )
+                              )
 
     equipment = relationship( "Equipment",
                               secondary=record_to_equipment,
                               backref=backref(
                                   "activities", order_by=date, cascade='all, delete'
                                   ),
-                              lazy='joined' )
+                              )
 
     Laps      = relationship( 'Lap',
                               backref=backref('activity'),
                               order_by='Lap.lap_number',
                               cascade='all, delete-orphan',
-                              lazy='joined' )
+                              )
 
     def __init__(self, **kwargs):
         self._initialize()
