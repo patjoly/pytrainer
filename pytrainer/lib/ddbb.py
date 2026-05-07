@@ -46,7 +46,6 @@ class DDBB(Singleton):
     url = None
     engine = None
     sessionmaker = sessionmaker()
-    session = None
 
     def __init__(self, url=None):
         """Initialize database connection, defaulting to SQLite in-memory
@@ -66,7 +65,6 @@ if no url is provided"""
             # The url has changed, destroy the engine
             self.engine.dispose()
             self.engine = None
-            self.session = None
             self.url = url
 
         if not self.url:
@@ -95,12 +93,6 @@ if no url is provided"""
         finally:
             session.close()
 
-    def connect(self):
-        self.session = self.sessionmaker()
-
-    def disconnect(self):
-        self.session.close()
-
     def create_tables(self, add_default=True):
         """Initialise the database schema from an empty database."""
         logging.info("Creating database tables")
@@ -112,14 +104,13 @@ if no url is provided"""
         Base.metadata.create_all(self.engine)
 
         if add_default:
-            with Session(self.engine) as session:
+            with self.session_scope() as session:
                 for item in [
                     Sport(name=u"Mountain Bike", weight=0.0, color=color_from_hex_string("0000ff")),
                     Sport(name=u"Bike", weight=0.0, color=color_from_hex_string("00ff00")),
                     Sport(name=u"Run", weight=0.0, color=color_from_hex_string("ffff00"))
                     ]:
                     session.add(item)
-                session.commit()
 
     def drop_tables(self):
         """Drop the database schema"""
