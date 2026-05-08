@@ -21,6 +21,7 @@ import sqlalchemy
 from sqlalchemy.exc import NoSuchTableError, OperationalError
 from sqlalchemy.sql.expression import func
 from sqlalchemy.schema import MetaData
+from sqlalchemy import select
 
 from pytrainer.lib.ddbb import Base
 
@@ -69,9 +70,10 @@ class MigratableDb:
         """Get the current version of the versioned DB.
 
         Raises OperationError if the DB is not initialized."""
+        stmt = select(func.max(MigrateVersion.version))
+
         with self.ddbb.session_scope() as session:
-            latest = session.query(func.max(MigrateVersion.version)).one()
-        return latest[0]
+            return session.execute(stmt).scalar_one()
 
     def get_upgrade_version(self):
         """Get the latest version available in upgrade repository."""

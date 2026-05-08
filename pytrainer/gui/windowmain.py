@@ -50,7 +50,7 @@ from pytrainer.gui.windowcalendar import WindowCalendar
 from pytrainer.lib.listview import ListSearch
 from pytrainer.lib import uc
 from pytrainer.core.activity import Activity
-from sqlalchemy import and_
+from sqlalchemy import and_, select
 
 
 class Main(SimpleBuilderApp):
@@ -888,8 +888,11 @@ class Main(SimpleBuilderApp):
         else:
             percentage = .05
 
+        stmt = select(Activity).where(and_(Activity.distance.between(activity.distance * (1-percentage), activity.distance * (1+percentage)), Activity.sport == activity.sport))
+
         with self.pytrainer_main.ddbb.session_scope() as session:
-            records = session.query(Activity).filter(and_(Activity.distance.between(activity.distance * (1-percentage), activity.distance * (1+percentage)), Activity.sport == activity.sport)).all()
+            result  = session.execute(stmt)
+            records = result.scalars().all()
 
         count = 1
         for r in records:
