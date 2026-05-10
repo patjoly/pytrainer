@@ -36,11 +36,35 @@ from pytrainer.lib import uc
 from pytrainer.profile import Profile
 from pytrainer.lib.ddbb import Base, ForcedInteger, record_to_equipment
 
-def _activity_load_options():
+def _activity_load_options(include=None, exclude=None):
+    '''
+    Return joinedload() options for Activity relationships.
+
+    Parameters
+    ----------
+    include : iterable[str]
+        Additional relationships to include.
+
+    exclude : iterable[str]
+        Default relationships to exclude.
+    '''
+
+    relationships = {
+        'equipment': Activity.equipment,
+        'Laps': Activity.Laps,
+        'sport': Activity.sport,
+    }
+    default  = {'equipment', 'Laps', 'sport'}
+
+    include  = set(include or [])
+    exclude  = set(exclude or [])
+    selected = (default | include) - exclude
+
+    unknown = selected - relationships.keys()
+    if unknown:
+        raise ValueError(f'Unknown Activity relationships: {unknown}')
     return [
-        joinedload(Activity.equipment),
-        joinedload(Activity.Laps),
-        joinedload(Activity.sport),
+        joinedload(relationships[name]) for name in selected
     ]
 
 class Laptrigger(enum.Enum):
