@@ -158,7 +158,7 @@ class Record:
                 new_lap = Lap(**lap)
                 record.Laps.append(new_lap)
 
-        with self.pytrainer_main.ddbb.session as session:
+        with self.pytrainer_main.ddbb.session_scope() as session:
             if equipment:
                 stmt = select(Equipment).filter(Equipment.id.in_(equipment))
                 result = session.execute(stmt)
@@ -320,7 +320,7 @@ class Record:
         logging.debug('Updating ddbb')
         self._formatRecordNew(list_options, record)
 
-        with self.pytrainer_main.ddbb.session as session:
+        with self.pytrainer_main.ddbb.session_scope() as session:
             if equipment:
                 stmt = select(Equipment).filter(Equipment.id.in_(equipment))
                 result = session.execute(stmt)
@@ -369,7 +369,7 @@ class Record:
                 stmt = select(Activity.date).filter(Activity.sport_id == sport_id).order_by(Activity.date.desc()).limit(1)
             else:
                 stmt = select(Activity.date).order_by(Activity.date.desc()).limit(1)
-            with self.pytrainer_main.ddbb.session as session:
+            with self.pytrainer_main.ddbb.session_scope() as session:
                 result = session.execute(stmt)
                 last_date = result.scalars().one_or_none()
             return str(last_date) if last_date else None
@@ -391,7 +391,7 @@ class Record:
         else:
             stmt = select(Activity).filter(condition).options(*options).order_by(Activity.date.desc())
 
-        with self.pytrainer_main.ddbb.session as session:
+        with self.pytrainer_main.ddbb.session_scope() as session:
             result = session.execute(stmt)
             return result.unique().scalars().all()
 

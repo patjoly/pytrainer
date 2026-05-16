@@ -20,12 +20,12 @@
 import logging
 import dateutil
 
-from pytrainer.lib.ddbb import DeclarativeBase, ForcedInteger
+from pytrainer.lib.ddbb import Base, ForcedInteger
 from pytrainer.lib.uc import UC
 from sqlalchemy import Column, Float, Date, Integer, select, delete, update
 from sqlalchemy.orm import Session
 
-class Athletestat(DeclarativeBase):
+class Athletestat(Base):
     __tablename__ = 'athletestats'
     bodyfat = Column(Float)
     date = Column(Date)

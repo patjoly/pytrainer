@@ -19,7 +19,6 @@ class GarminFitTest(unittest.TestCase):
 
     def setUp(self):
         self.ddbb = DDBB()
-        self.ddbb.connect()
         self.ddbb.create_tables(add_default=True)
         self.environment = Environment()
         self.parent = Mock()
@@ -27,7 +26,6 @@ class GarminFitTest(unittest.TestCase):
         self.parent.parent.ddbb = self.ddbb
 
     def tearDown(self):
-        self.ddbb.disconnect()
         self.ddbb.drop_tables()
 
     def test_parse_fit_file(self):

@@ -23,15 +23,17 @@ import logging
 import os
 
 from sqlalchemy import create_engine, select, Table, Column, ForeignKey, Integer
-from sqlalchemy.orm import sessionmaker, Session, declarative_base
+from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
 from sqlalchemy.types import TypeDecorator
+from contextlib import contextmanager
 
 from pytrainer.util.color import color_from_hex_string
 from pytrainer.lib.singleton import Singleton
 
-DeclarativeBase = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
-record_to_equipment = Table('record_equipment', DeclarativeBase.metadata,
+record_to_equipment = Table('record_equipment', Base.metadata,
                             Column('id', Integer, primary_key=True),
                             Column('equipment_id', Integer,
                                    ForeignKey('equipment.id'),
@@ -44,7 +46,6 @@ class DDBB(Singleton):
     url = None
     engine = None
     sessionmaker = sessionmaker()
-    session = None
 
     def __init__(self, url=None):
         """Initialize database connection, defaulting to SQLite in-memory
@@ -64,7 +65,6 @@ if no url is provided"""
             # The url has changed, destroy the engine
             self.engine.dispose()
             self.engine = None
-            self.session = None
             self.url = url
 
         if not self.url:
@@ -72,17 +72,26 @@ if no url is provided"""
 
         if not self.engine:
             self.engine = create_engine(self.url, logging_name='db')
-            self.sessionmaker.configure(bind=self.engine)
+            self.sessionmaker.configure(
+                bind=self.engine,
+                expire_on_commit=False
+            )
         logging.info("DDBB created with url %s", self.url)
 
     def get_connection_url(self):
         return self.url
 
-    def connect(self):
-        self.session = self.sessionmaker()
-
-    def disconnect(self):
-        self.session.close()
+    @contextmanager
+    def session_scope(self):
+        session = self.sessionmaker()
+        try:
+            yield session
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def create_tables(self, add_default=True):
         """Initialise the database schema from an empty database."""
@@ -92,21 +101,20 @@ if no url is provided"""
         from pytrainer.waypoint import Waypoint
         from pytrainer.core.activity import Lap
         from pytrainer.athlete import Athletestat
-        DeclarativeBase.metadata.create_all(self.engine)
+        Base.metadata.create_all(self.engine)
 
         if add_default:
-            with Session(self.engine) as session:
+            with self.session_scope() as session:
                 for item in [
                     Sport(name=u"Mountain Bike", weight=0.0, color=color_from_hex_string("0000ff")),
                     Sport(name=u"Bike", weight=0.0, color=color_from_hex_string("00ff00")),
                     Sport(name=u"Run", weight=0.0, color=color_from_hex_string("ffff00"))
                     ]:
                     session.add(item)
-                session.commit()
 
     def drop_tables(self):
         """Drop the database schema"""
-        DeclarativeBase.metadata.drop_all(self.engine)
+        Base.metadata.drop_all(self.engine)
 
     def create_backup(self):
         """Create a backup of the current database."""

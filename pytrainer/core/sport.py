@@ -17,9 +17,10 @@
 #Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 from pytrainer.util.color import Color, color_from_hex_string
-from pytrainer.lib.ddbb import DeclarativeBase, ForcedInteger
+from pytrainer.lib.ddbb import Base, ForcedInteger
 from sqlalchemy import Column, Integer, Float, Unicode, CheckConstraint, select
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import validates
 from sqlalchemy.exc import InvalidRequestError, IntegrityError, StatementError
 import sqlalchemy.types as types
 import logging
@@ -35,7 +36,7 @@ class ColorType(types.TypeDecorator):
     def process_result_value(self, value, dialect):
         return color_from_hex_string(value)
 
-class Sport(DeclarativeBase):
+class Sport(Base):
     """A type of exercise. For example: "running" or "cycling"."""
 
     __tablename__ = 'sports'
@@ -53,6 +54,30 @@ class Sport(DeclarativeBase):
         self.max_pace = None
         self.color = Color(0x0000ff)
         super(Sport, self).__init__(**kwargs)
+
+    @validates('max_pace', 'id')
+    def validate_integers(self, key, value):
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            raise
+
+    @validates('met', 'weight')
+    def validate_floats(self, key, value):
+        if value is None:
+            return None
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            raise
+
+    @validates('name')
+    def validate_strings(self, key, value):
+        if value is None:
+            raise ValueError
+        return str(value)
 
     def __eq__(self, other):
         if not isinstance(other, Sport):
@@ -89,7 +114,7 @@ class SportService:
         if sport_id is None:
             raise ValueError("Sport id cannot be None")
         stmt = select(Sport).where(Sport.id == sport_id)
-        with self._ddbb.session as session:
+        with self._ddbb.session_scope() as session:
             result = session.execute(stmt)
             try:
                 return result.scalar_one()
@@ -103,7 +128,7 @@ class SportService:
         if name is None:
             raise ValueError("Sport name cannot be None")
         stmt = select(Sport).where(Sport.name == name)
-        with self._ddbb.session as session:
+        with self._ddbb.session_scope() as session:
             result = session.execute(stmt)
             try:
                 return result.scalar_one()
@@ -113,7 +138,7 @@ class SportService:
     def get_all_sports(self):
         """Get all stored sports."""
         stmt = select(Sport)
-        with self._ddbb.session as session:
+        with self._ddbb.session_scope() as session:
             result = session.execute(stmt)
             return result.scalars().all()
 
@@ -122,7 +147,7 @@ class SportService:
 
         The stored object is returned."""
         try:
-            with self._ddbb.session as session:
+            with self._ddbb.session_scope() as session:
                 session.add(sport)
                 session.commit()
                 session.refresh(sport)
@@ -138,7 +163,7 @@ class SportService:
         if not sport.id:
             raise SportServiceException("Cannot remove sport which has not been stored: '{0}'.".format(sport.name))
         try:
-            with self._ddbb.session as session:
+            with self._ddbb.session_scope() as session:
                 session.delete(sport)
                 session.commit()
         except InvalidRequestError:

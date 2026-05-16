@@ -21,11 +21,12 @@ import sqlalchemy
 from sqlalchemy.exc import NoSuchTableError, OperationalError
 from sqlalchemy.sql.expression import func
 from sqlalchemy.schema import MetaData
+from sqlalchemy import select
 
-from pytrainer.lib.ddbb import DeclarativeBase
+from pytrainer.lib.ddbb import Base
 
 
-class MigrateVersion(DeclarativeBase):
+class MigrateVersion(Base):
     __tablename__ = 'migrate_version'
 
     repository_id = sqlalchemy.Column(sqlalchemy.String(250), primary_key=True)
@@ -69,8 +70,10 @@ class MigratableDb:
         """Get the current version of the versioned DB.
 
         Raises OperationError if the DB is not initialized."""
-        latest = self.ddbb.session.query(func.max(MigrateVersion.version)).one()
-        return latest[0]
+        stmt = select(func.max(MigrateVersion.version))
+
+        with self.ddbb.session_scope() as session:
+            return session.execute(stmt).scalar_one()
 
     def get_upgrade_version(self):
         """Get the latest version available in upgrade repository."""
@@ -80,14 +83,15 @@ class MigratableDb:
         """Initialize the database with migrate metadata.
 
         Raises DatabaseAlreadyControlledError if the DB is already initialized."""
-        self.ddbb.session.add(
-            MigrateVersion(
-                repository_id='pytrainer',
-                repository_path='/usr/lib/python3/site-packages/pytrainer/upgrade',
-                version=15,
+        with self.ddbb.session_scope() as session:
+            session.add(
+                MigrateVersion(
+                    repository_id='pytrainer',
+                    repository_path='/usr/lib/python3/site-packages/pytrainer/upgrade',
+                    version=15,
+                    )
                 )
-            )
-        self.ddbb.session.commit()
+            session.commit()
 
     def upgrade(self):
         """Run all available upgrade scripts for the repository."""

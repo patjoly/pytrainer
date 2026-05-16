@@ -20,6 +20,8 @@
 import csv
 from pytrainer.gui.dialogs import save_file_chooser_dialog
 from pytrainer.core.activity import Activity
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
 
 class Save(object):
@@ -69,7 +71,16 @@ class Save(object):
                 yield value
 
     def _read_activities(self):
-        for activity in self.ddbb.session.query(Activity).order_by(Activity.date_time_utc):
+        stmt = (
+            select(Activity)
+            .options(joinedload(Activity.sport))
+            .order_by(Activity.date_time_utc)
+        )
+
+        with self.ddbb.session_scope() as session:
+            activities = session.execute(stmt).unique().scalars().all()
+
+        for activity in activities:
             yield self._convert_activity(activity)
 
     def run(self):

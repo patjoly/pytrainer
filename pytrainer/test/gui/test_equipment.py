@@ -181,13 +181,11 @@ class EquipmentUiTest(unittest.TestCase):
         from pytrainer.gui.equipment import EquipmentUi
         initialize_gettext()
         self.ddbb = DDBB()
-        self.ddbb.connect()
         self.ddbb.create_tables()
         self.equipment_service = EquipmentService(self.ddbb)
         self.equipment_ui = EquipmentUi(self.equipment_service)
 
     def tearDown(self):
-        self.ddbb.disconnect()
         self.ddbb.drop_tables()
 
     def test_equipment_add(self):

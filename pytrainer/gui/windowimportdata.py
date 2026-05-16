@@ -954,8 +954,9 @@ class WindowImportdata(SimpleBuilderApp):
                     pass
 
             #Insert into DB
-            self.pytrainer_main.ddbb.session.add(data)
-            self.pytrainer_main.ddbb.session.commit()
+            with self.pytrainer_main.ddbb.session_scope() as session:
+                session.add(data)
+                session.commit()
         #Display message....
         self.updateStatusbar(self.statusbarCSVImport, _("Import completed. %d rows processed") % i)
         #Disable import button

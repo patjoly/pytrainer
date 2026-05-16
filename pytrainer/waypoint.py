@@ -19,9 +19,9 @@
 import logging
 from pytrainer.lib.date import unixtime2date
 from sqlalchemy import Column, Unicode, Float, Integer, Date, select
-from pytrainer.lib.ddbb import DeclarativeBase
+from pytrainer.lib.ddbb import Base
 
-class Waypoint(DeclarativeBase):
+class Waypoint(Base):
     __tablename__ = 'waypoints'
     comment = Column(Unicode(length=240))
     ele = Column(Float)

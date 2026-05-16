@@ -50,7 +50,7 @@ from pytrainer.gui.windowcalendar import WindowCalendar
 from pytrainer.lib.listview import ListSearch
 from pytrainer.lib import uc
 from pytrainer.core.activity import Activity
-from sqlalchemy import and_
+from sqlalchemy import and_, select
 
 
 class Main(SimpleBuilderApp):
@@ -510,7 +510,7 @@ class Main(SimpleBuilderApp):
                     liststore, activity = data
                     liststore[path][12] = new_text
                     activity.Laps[int(path)].comments = new_text
-                    self.pytrainer_main.ddbb.session.commit()
+                    self.pytrainer_main.ddbb.session_scope().commit()
 
                 def show_tooltip(widget, x, y, keyboard_mode, tooltip, user_param1):
                      path = self.lapsTreeView.get_path_at_pos(x,y-20)
@@ -887,7 +887,12 @@ class Main(SimpleBuilderApp):
             percentage = widget.get_value() / 100
         else:
             percentage = .05
-        records = self.pytrainer_main.ddbb.session.query(Activity).filter(and_(Activity.distance.between(activity.distance * (1-percentage), activity.distance * (1+percentage)), Activity.sport == activity.sport)).all()
+
+        stmt = select(Activity).where(and_(Activity.distance.between(activity.distance * (1-percentage), activity.distance * (1+percentage)), Activity.sport == activity.sport))
+
+        with self.pytrainer_main.ddbb.session_scope() as session:
+            result  = session.execute(stmt)
+            records = result.scalars().all()
 
         count = 1
         for r in records:

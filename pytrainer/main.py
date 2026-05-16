@@ -66,8 +66,6 @@ class pyTrainer:
         self.uc = UC()
         self.profilewindow = None
         self.ddbb = DDBB(self.profile.sqlalchemy_url)
-        logging.debug('connecting to DDBB')
-        self.ddbb.connect()
 
         logging.info('Checking if some upgrade action is needed...')
         initialize_data(self.ddbb, self.environment.conf_dir)

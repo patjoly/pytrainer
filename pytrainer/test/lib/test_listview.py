@@ -48,37 +48,36 @@ class ListviewTest(unittest.TestCase):
         env.create_directories()
         self.main = Mock()
         self.main.ddbb = DDBB()
-        self.main.ddbb.connect()
         self.main.ddbb.create_tables()
         self.main.profile = Profile()
         self.main.uc = UC()
         self.sport_service = SportService(self.main.ddbb)
         non_linear_sport = self.sport_service.get_sport(1)
-        self.main.ddbb.session.delete(non_linear_sport)
-        self.main.ddbb.session.commit()
-        make_transient(non_linear_sport)
-        non_linear_sport.id = None
-        self.main.ddbb.session.add(non_linear_sport)
-        self.main.ddbb.session.commit()
-        self.main.record = Record(self.sport_service, parent=self.main)
-        self.parent = Main(self.sport_service, parent=self.main)
-        self.main.ddbb.session.add(Activity(sport=non_linear_sport,
-                                            date=datetime.datetime(2018, 5, 6, 10, 0, 0),
-                                            duration=1000, distance=25))
-        self.main.ddbb.session.commit()
 
-        self.main.ddbb.session.add(Activity(sport=non_linear_sport,
-                                            date=datetime.datetime(2018, 1, 6, 10, 0, 0),
-                                            duration=10000, distance=150))
-        self.main.ddbb.session.commit()
+        with self.main.ddbb.session_scope() as session:
+            session.delete(non_linear_sport)
+            session.commit()
+            make_transient(non_linear_sport)
+            non_linear_sport.id = None
+            session.add(non_linear_sport)
+            session.commit()
 
-        self.main.ddbb.session.add(Activity(sport=self.sport_service.get_sport(2),
-                                            date=datetime.datetime(2018, 1, 6, 10, 0, 0),
-                                            duration=10000, distance=100))
-        self.main.ddbb.session.commit()
+            self.main.record = Record(self.sport_service, parent=self.main)
+            self.parent = Main(self.sport_service, parent=self.main)
+
+            session.add(Activity(sport=non_linear_sport,
+                                 date=datetime.datetime(2018, 5, 6, 10, 0, 0),
+                                 duration=1000, distance=25))
+
+            session.add(Activity(sport=non_linear_sport,
+                                 date=datetime.datetime(2018, 1, 6, 10, 0, 0),
+                                 duration=10000, distance=150))
+
+            session.add(Activity(sport=self.sport_service.get_sport(2),
+                                 date=datetime.datetime(2018, 1, 6, 10, 0, 0),
+                                 duration=10000, distance=100))
 
     def tearDown(self):
-        self.main.ddbb.disconnect()
         self.main.ddbb.drop_tables()
 
     def test_listsearch_all(self):

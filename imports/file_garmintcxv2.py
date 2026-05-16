@@ -24,6 +24,7 @@ from lxml import etree
 from pytrainer.lib.date import getDateTime
 from pytrainer.core.activity import Activity
 from sqlalchemy.orm import exc
+from sqlalchemy import select
 
 from pytrainer.lib.xmlUtils import XMLParser
 
@@ -145,11 +146,9 @@ class garmintcxv2():
             return False
         logging.info("Checking if activity from %s exists in db" % startTime[0]) # 2012-10-14 10:02:42+00:00
         time = startTime[0].strftime("%Y-%m-%dT%H:%M:%SZ")
-        try:
-            self.parent.parent.ddbb.session.query(Activity).filter(Activity.date_time_utc == time).one()
-            return True
-        except exc.NoResultFound:
-            return False
+        stmt = select(Activity).where(Activity.date_time_utc == time)
+        with self.parent.parent.ddbb.session_scope() as session:
+            return session.execute(stmt).unique().scalar_one_or_none() is not None
 
     def getSport(self, activity):
         try:

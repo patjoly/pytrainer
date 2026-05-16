@@ -10,7 +10,6 @@ class GarminTCXv2PluginTest(unittest.TestCase):
 
     def setUp(self):
         self.ddbb = DDBB()
-        self.ddbb.connect()
         self.ddbb.create_tables(add_default=True)
         main = Mock()
         main.ddbb = self.ddbb
@@ -23,7 +22,6 @@ class GarminTCXv2PluginTest(unittest.TestCase):
         self.activity = self.plugin.getActivities(tree)[0]
 
     def tearDown(self):
-        self.ddbb.disconnect()
         self.ddbb.drop_tables()
 
     def test_not_inDatabase(self):
@@ -31,8 +29,8 @@ class GarminTCXv2PluginTest(unittest.TestCase):
 
     def test_inDatabase(self):
         activity = Activity(date_time_utc='2012-10-14T10:02:42.000Z', sport_id='1')
-        self.ddbb.session.add(activity)
-        self.ddbb.session.commit()
+        with self.ddbb.session_scope() as session:
+            session.add(activity)
         self.assertTrue(self.plugin.inDatabase(self.activity))
 
     def test_detailsFromTCX(self):
