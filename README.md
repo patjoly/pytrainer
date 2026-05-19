@@ -1,3 +1,16 @@
+# Pytrainer (Fork of)
+This repository is a fork of the original Pytrainer project.
+
+Main goals of this fork:
+- SQLAlchemy 2.0 modernization
+- Python compatibility updates
+- dependency cleanup
+- maintenance and bug fixes
+
+The original Pytrainer project can be found here: https://github.com/pytrainer/pytrainer
+
+This fork aims to preserve the application's architecture and behaviour while updating the codebase for current Python ecosystem and applying functional updates to features like maps and charts.
+
 # pytrainer - Free your sports
 pytrainer is a desktop application for logging and graphing sporting
 activities such as running or cycling sessions. Data can be imported from GPS
@@ -54,3 +67,9 @@ Certain plugins and extensions also need additional software:
 * Development guide: [https://github.com/pytrainer/pytrainer/wiki/Development-guide](https://github.com/pytrainer/pytrainer/wiki/Development-guide)
 * Localization guide: [https://github.com/pytrainer/pytrainer/wiki/Localization-guide](https://github.com/pytrainer/pytrainer/wiki/Localization-guide)
 * Report an Issue: [https://github.com/pytrainer/pytrainer/issues](https://github.com/pytrainer/pytrainer/issues)
+
+## Relationship to upstream
+
+This fork started as a compatibility and modernization effort for the original Pytrainer project.
+
+The intent is to keep the original application's functionality while updating dependencies and infrastructure for modern Python environments. Updates to upstream will be continuously applied.
