@@ -17,7 +17,7 @@
 #Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 import logging
-from pytrainer.core.activity import Activity
+from pytrainer.core.activity import Activity, _activity_load_options
 from sqlalchemy import select
 
 class Stats:
@@ -43,7 +43,7 @@ class Stats:
         for f in fields:
             data[f] = 0
 
-        stmt = select(Activity)
+        stmt = select(Activity).options(*_activity_load_options(exclude=['Laps', 'equipment']))
         with self.pytrainer_main.ddbb.session_scope() as session:
             result = session.execute(stmt)
             rows   = result.unique().scalars().all()
