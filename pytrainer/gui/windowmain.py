@@ -1685,6 +1685,9 @@ class Main(SimpleBuilderApp):
     def on_export_csv_activate(self,widget):
         self.parent.exportCsv()
 
+    def on_export_waypoints_gpx_activate(self, widget):
+        self.parent.exportWaypointsGpx()
+
     def on_newrecord_clicked(self,widget):
         if self.selected_view  == 'athlete':
             #print 'New athlete'

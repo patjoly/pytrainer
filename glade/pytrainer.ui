@@ -471,6 +471,14 @@
           </object>
         </child>
         <child>
+          <object class="GtkAction" id="export_waypoints_gpx">
+            <property name="stock_id">gtk-save-as</property>
+            <property name="name">export_waypoints_gpx</property>
+            <property name="label" translatable="yes">_Export Waypoints as GPX</property>
+            <signal handler="on_export_waypoints_gpx_activate" name="activate"/>
+          </object>
+        </child>
+        <child>
           <object class="GtkAction" id="salir1">
             <property name="stock_id">gtk-quit</property>
             <property name="name">salir1</property>
@@ -567,6 +575,7 @@
           <menuitem action="menu_importdata"/>
           <separator/>
           <menuitem action="export_csv"/>
+          <menuitem action="export_waypoints_gpx"/>
           <separator/>
           <menuitem action="salir1"/>
         </menu>

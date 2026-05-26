@@ -459,6 +459,13 @@ class pyTrainer:
         save.run()
         logging.debug('<<')
 
+    def exportWaypointsGpx(self):
+        logging.debug('>>')
+        from .save_gpx import SaveGpx
+        save = SaveGpx(self.ddbb)
+        save.run()
+        logging.debug('<<')
+
     def editProfile(self):
         logging.debug('>>')
         from .gui.windowprofile import WindowProfile
