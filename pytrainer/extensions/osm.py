@@ -361,8 +361,8 @@ class Osm:
                 lapsContent+=',\n'
                 lapsContent+='\t\t\t\t\tlap%d: { url : "/waypoint.png", coordinates : [%f,%f], popupInfo: "%s" }' % \
                         (lapNumber, lapLon, lapLat, \
-                        "<div class='info_content'>End of lap:%d<br>Elapsed time:%s<br>Distance:%0.2f km<br>Calories:%s</div>" % \
-                            (lapNumber, strElapsedTime, float(lap['distance'])/1000, lap['calories'])
+                        "<div class='info_content'>End of lap:%d<br>Elapsed time:%s<br>Distance:%0.2f km<br>Calories:%s</div> %f, %f" % \
+                            (lapNumber, strElapsedTime, float(lap['distance'])/1000, lap['calories'], lapLat, lapLon)
                         )
             content+=lapsContent
         except Exception as e:
