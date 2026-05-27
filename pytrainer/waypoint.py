@@ -49,9 +49,8 @@ class WaypointService:
             session.commit()
         logging.debug("<<")
 
-    def updateWaypoint(self,id_waypoint,lat,lon,name,desc,sym):
+    def updateWaypoint(self, id_waypoint, lat, lon, name, desc, sym, ele=None, waypoint_time=None):
         logging.debug(">>")
-        logging.debug("Updating waypoint id: %d with lat %s,lon %s,comment %s,name %s,sym %s" %(id_waypoint,lat,lon,desc,name,sym) )
         with self.pytrainer_main.ddbb.sessionmaker() as session:
             waypoint = session.execute(select(Waypoint).filter(Waypoint.id == id_waypoint)).scalar_one()
             waypoint.lat = lat
@@ -59,7 +58,14 @@ class WaypointService:
             waypoint.name = name
             waypoint.comment = desc
             waypoint.sym = sym
+            waypoint.ele = float(ele) if ele else None
+            if waypoint_time:
+                import dateutil.parser
+                waypoint.time = dateutil.parser.parse(waypoint_time).date()
+            else:
+                waypoint.time = None
             session.commit()
+        logging.debug("Updating waypoint id: %d with lat %s,lon %s,comment %s,name %s,sym %s" %(id_waypoint,lat,lon,desc,name,sym) )
         logging.debug("<<")
 
     def addWaypoint(self,lon=None,lat=None,name=None,comment=None,sym=None):

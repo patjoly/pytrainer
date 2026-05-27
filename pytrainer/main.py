@@ -446,9 +446,9 @@ class pyTrainer:
              warning.run()
         logging.debug('<<')
 
-    def updateWaypoint(self,id_waypoint,lat,lon,name,desc,sym):
+    def updateWaypoint(self, id_waypoint, lat, lon, name, desc, sym, ele=None, waypoint_time=None):
         logging.debug('>>')
-        self.waypoint.updateWaypoint(id_waypoint,lat,lon,name,desc,sym)
+        self.waypoint.updateWaypoint(id_waypoint, lat, lon, name, desc, sym, ele, waypoint_time)
         self.refreshWaypointView(id_waypoint)
         logging.debug('<<')
 
