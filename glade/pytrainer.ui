@@ -471,6 +471,14 @@
           </object>
         </child>
         <child>
+          <object class="GtkAction" id="export_waypoints_gpx">
+            <property name="stock_id">gtk-save-as</property>
+            <property name="name">export_waypoints_gpx</property>
+            <property name="label" translatable="yes">_Export Waypoints as GPX</property>
+            <signal handler="on_export_waypoints_gpx_activate" name="activate"/>
+          </object>
+        </child>
+        <child>
           <object class="GtkAction" id="salir1">
             <property name="stock_id">gtk-quit</property>
             <property name="name">salir1</property>
@@ -567,6 +575,7 @@
           <menuitem action="menu_importdata"/>
           <separator/>
           <menuitem action="export_csv"/>
+          <menuitem action="export_waypoints_gpx"/>
           <separator/>
           <menuitem action="salir1"/>
         </menu>
@@ -6765,7 +6774,7 @@
                             <child>
                               <object class="GtkTable" id="table14">
                                 <property name="visible">True</property>
-                                <property name="n_rows">2</property>
+                                <property name="n_rows">3</property>
                                 <property name="n_columns">6</property>
                                 <property name="row_spacing">5</property>
                                 <child>
@@ -6961,6 +6970,67 @@
                                     <property name="y_options"/>
                                   </packing>
                                 </child>
+                                <child>
+                                  <object class="GtkLabel" id="label-elevation">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">Elevation:</property>
+                                    <property name="use_markup">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="top_attach">2</property>
+                                    <property name="bottom_attach">3</property>
+                                    <property name="x_options">GTK_FILL</property>
+                                    <property name="y_options"/>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="waypoint_elevation">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="invisible_char">&#x25CF;</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">1</property>
+                                    <property name="right_attach">2</property>
+                                    <property name="top_attach">2</property>
+                                    <property name="bottom_attach">3</property>
+                                    <property name="x_options"/>
+                                    <property name="y_options"/>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="label-time">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">Time:</property>
+                                    <property name="use_markup">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">2</property>
+                                    <property name="right_attach">3</property>
+                                    <property name="top_attach">2</property>
+                                    <property name="bottom_attach">3</property>
+                                    <property name="x_options">GTK_FILL</property>
+                                    <property name="y_options"/>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="waypoint_time">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="invisible_char">&#x25CF;</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">3</property>
+                                    <property name="right_attach">4</property>
+                                    <property name="top_attach">2</property>
+                                    <property name="bottom_attach">3</property>
+                                    <property name="x_options"/>
+                                    <property name="y_options"/>
+                                  </packing>
+                                </child>
+
                                 <child>
                                   <placeholder/>
                                 </child>

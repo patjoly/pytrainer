@@ -446,9 +446,9 @@ class pyTrainer:
              warning.run()
         logging.debug('<<')
 
-    def updateWaypoint(self,id_waypoint,lat,lon,name,desc,sym):
+    def updateWaypoint(self, id_waypoint, lat, lon, name, desc, sym, ele=None, waypoint_time=None):
         logging.debug('>>')
-        self.waypoint.updateWaypoint(id_waypoint,lat,lon,name,desc,sym)
+        self.waypoint.updateWaypoint(id_waypoint, lat, lon, name, desc, sym, ele, waypoint_time)
         self.refreshWaypointView(id_waypoint)
         logging.debug('<<')
 
@@ -456,6 +456,13 @@ class pyTrainer:
         logging.debug('>>')
         from .save import Save
         save = Save(self.ddbb)
+        save.run()
+        logging.debug('<<')
+
+    def exportWaypointsGpx(self):
+        logging.debug('>>')
+        from .save_gpx import SaveGpx
+        save = SaveGpx(self.ddbb)
         save.run()
         logging.debug('<<')
 

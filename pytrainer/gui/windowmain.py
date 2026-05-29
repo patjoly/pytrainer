@@ -1331,6 +1331,12 @@ class Main(SimpleBuilderApp):
             self.waypoint_name.set_text(str(record_list[default_id][6]))
             self.waypoint_description.set_text(str(record_list[default_id][4]))
             self.set_waypoint_type(str(record_list[default_id][7]))
+            self.waypoint_elevation.set_text(
+                str(record_list[default_id][3]) if record_list[default_id][3] is not None else ""
+            )
+            self.waypoint_time.set_text(
+                str(record_list[default_id][5]) if record_list[default_id][5] is not None else ""
+            )
         if redrawmap == 1 and self.waypointeditor:
             self.waypointeditor.createHtml(default_waypoint)
             self.waypointeditor.drawMap()
@@ -1684,6 +1690,9 @@ class Main(SimpleBuilderApp):
 
     def on_export_csv_activate(self,widget):
         self.parent.exportCsv()
+
+    def on_export_waypoints_gpx_activate(self, widget):
+        self.parent.exportWaypointsGpx()
 
     def on_newrecord_clicked(self,widget):
         if self.selected_view  == 'athlete':
@@ -2197,15 +2206,17 @@ class Main(SimpleBuilderApp):
         #self.entryAthleteDate.set_text(date)
 
     ######## waypoints events ##########
-    def on_savewaypoint_clicked(self,widget):
-        selected,iter = self.waypointTreeView.get_selection().get_selected()
-        id_waypoint = selected.get_value(iter,0)
+    def on_savewaypoint_clicked(self, widget):
+        selected, iter = self.waypointTreeView.get_selection().get_selected()
+        id_waypoint = selected.get_value(iter, 0)
         lat = self.waypoint_latitude.get_text()
         lon = self.waypoint_longitude.get_text()
         name = self.waypoint_name.get_text()
         desc = self.waypoint_description.get_text()
         sym = self.waypoint_type.get_active_text()
-        self.parent.updateWaypoint(id_waypoint,lat,lon,name,desc,sym)
+        ele = self.waypoint_elevation.get_text()
+        waypoint_time = self.waypoint_time.get_text()
+        self.parent.updateWaypoint(id_waypoint, lat, lon, name, desc, sym, ele, waypoint_time)
 
     def on_removewaypoint_clicked(self,widget):
         selected,iter = self.waypointTreeView.get_selection().get_selected()

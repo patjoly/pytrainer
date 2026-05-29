@@ -45,6 +45,7 @@ class WaypointEditor:
         vbox.show_all()
         self.htmlfile = ""
         self.waypoint=waypoint
+        self.current_zoom = 11
         self.pytrainer_main=parent
         self.tmpdir = (self.pytrainer_main.profile.tmpdir)
         logging.debug("<<")
@@ -106,6 +107,11 @@ class WaypointEditor:
                     self.pytrainer_main.refreshWaypointView(default_waypoint=id_waypoint)
                 else:
                     raise ValueError("Error parsing addWaypoint parameters: %s" % args)
+            elif fname == "setZoom":
+                try:
+                    self.current_zoom = int(args)
+                except ValueError:
+                    pass
             elif fname == "updateWaypoint":
                 am = re.match("([+-]?[0-9]+[.][0-9]+),([+-]?[0-9]+[.][0-9]+),([0-9]*)", args)
                 if am:
@@ -235,13 +241,19 @@ function load() {
     lat = 0;
 """
         content +="""
-    map = L.map('map_canvas').setView([lat, lon], 11);
+            map = L.map('map_canvas').setView([lat, lon], %d);
+        """ % self.current_zoom
 
+        content +="""
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19
     }).addTo(map);
 
     L.control.fullscreen().addTo(map);
+
+    map.on('zoomend', function() {
+        document.title = "call:setZoom(" + map.getZoom() + ")";
+    });
 
     for (var i = 0; i < waypointList.length; i++) {
         createMarker(waypointList[i]);
