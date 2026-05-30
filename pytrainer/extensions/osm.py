@@ -106,6 +106,7 @@ class Osm:
         pointlist = []
         polyline = []
         attrlist = []
+        trackpoint_js = []
 
         try :
             list_values = activity.tracks
@@ -118,6 +119,11 @@ class Osm:
             if list_values is not None and list_values != [] and len(list_values) > 0:
                 for i in list_values:
                     lat, lon = float(i[4]), float(i[5])
+                    cumul_dist = i[0]
+                    elevation  = i[1]
+                    speed      = i[3]
+                    heart_rate = i[6]
+
                     pointlist.append((lat,lon))
                     polyline.append("[%s, %s]" % (lon, lat))
                     attrlist.append((i[3],i[6])) # (Speed, HR)
@@ -131,6 +137,24 @@ class Osm:
                     if bounding_box['max_lon'] == None or lon > bounding_box['max_lon']:
                         bounding_box['max_lon'] = lon
 
+                    trackpoint_js.append(
+                        '''{
+                            lon:    %f,
+                            lat:    %f,
+                            ele:   "%.1f",
+                            speed: "%.2f",
+                            hr:    "%d",
+                            cumul_dist: "%.2f"
+                        }''' % (
+                            lon,
+                            lat,
+                            float(elevation),
+                            float(speed),
+                            int(heart_rate),
+                            float(cumul_dist)
+                        )
+                    )
+
                 points,levels = Points.encodePoints(pointlist)
                 points = points.replace("\\","\\\\")
                 laps = activity.laps
@@ -143,7 +167,7 @@ class Osm:
                 startinfo = html.escape(startinfo) #Encode for html
                 finishinfo = html.escape(finishinfo) #Encode for html
 
-                self.createHtml_osm(polyline, startinfo, finishinfo, laps, attrlist, linetype, bounding_box)
+                self.createHtml_osm(polyline, startinfo, finishinfo, laps, attrlist, linetype, bounding_box, trackpoint_js)
             else:
                 self.createErrorHtml()
         except Exception as e:
@@ -307,7 +331,7 @@ class Osm:
         file.run()
         return self.htmlfile
         
-    def createHtml_osm(self, polyline, startinfo, finishinfo, laps, attrlist, linetype, bounding_box):
+    def createHtml_osm(self, polyline, startinfo, finishinfo, laps, attrlist, linetype, bounding_box, trackpoint_js):
         '''
         Generate OSM map html file using MapLayers
         '''
@@ -451,7 +475,7 @@ class Osm:
                 var trackPoints = [
             '''
 
-        content += ",".join(polyline)
+        content += ",".join(trackpoint_js)
 
         content += '''];
 
@@ -548,7 +572,7 @@ class Osm:
                             // Remove previous popup
                             if (currentPopup) {
                                 map.removePopup(currentPopup);
-                                currentPopup.destroy();
+                                currentPopup = null;
                             }
 
                             currentPopup = this.popup;
@@ -585,8 +609,8 @@ class Osm:
                     // Find nearest stored track point
                     for (var i = 0; i < trackPoints.length; i++) {
 
-                        var pointLon = trackPoints[i][0];
-                        var pointLat = trackPoints[i][1];
+                        var pointLon = trackPoints[i].lon;
+                        var pointLat = trackPoints[i].lat;
 
                         var dx = clickedLon - pointLon;
                         var dy = clickedLat - pointLat;
@@ -607,12 +631,12 @@ class Osm:
                         // Remove previous popup
                         if (currentPopup) {
                             map.removePopup(currentPopup);
-                            currentPopup.destroy();
+                            currentPopup = null;
                         }
 
                         var popupLonLat = new OpenLayers.LonLat(
-                            nearestPoint[0],
-                            nearestPoint[1]
+                            nearestPoint.lon,
+                            nearestPoint.lat
                         );
 
                         popupLonLat.transform(pWGS, pMP);
@@ -621,8 +645,12 @@ class Osm:
                             "TrackPoint",
                             popupLonLat,
                             null,
-                            "Latitude: " + nearestPoint[1].toFixed(6) +
-                            "<br>Longitude: " + nearestPoint[0].toFixed(6),
+                            "Latitude: "      + nearestPoint.lat.toFixed(6) +
+                            "<br>Longitude: " + nearestPoint.lon.toFixed(6) +
+                            "<br>Elevation: " + nearestPoint.ele + " m" +
+                            "<br>Speed: "     + nearestPoint.speed + " km/h" +
+                            "<br>HR: "        + nearestPoint.hr + " bpm" +
+                            "<br>Distance: "  + nearestPoint.cumul_dist,
                             null,
                             true
                         );
