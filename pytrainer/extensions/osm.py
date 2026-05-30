@@ -331,6 +331,7 @@ class Osm:
             <script type="text/javascript">
                 //complex object of type OpenLayers.Map
                 var map;
+                var currentPopup = null;
 
                 //icons data object
                 var icons = {
@@ -442,6 +443,17 @@ class Osm:
                     strokeOpacity: 0.6,
                     pointRadius: 6,
                 };
+            '''
+
+        # Export raw track points for click lookup
+        content += '''
+                // Raw GPS points from activity track
+                var trackPoints = [
+            '''
+
+        content += ",".join(polyline)
+
+        content += '''];
 
                 //Build track object
                 var track =
@@ -531,7 +543,21 @@ class Osm:
                                                 true,
                                             null
                                             );
-                        icons[i].onClick = function(e) { map.addPopup(this.popup); this.popup.show(); }
+                        icons[i].onClick = function(e) {
+
+                            // Remove previous popup
+                            if (currentPopup) {
+                                map.removePopup(currentPopup);
+                                currentPopup.destroy();
+                            }
+
+                            currentPopup = this.popup;
+
+                            map.addPopup(currentPopup);
+                            currentPopup.show();
+
+                            OpenLayers.Event.stop(e);
+                        }
                         icons[i].marker.events.register("mousedown", icons[i], function(e) { this.onClick(e)} )
                         layerMarkers.addMarker(icons[i].marker);
                     }
@@ -541,6 +567,69 @@ class Osm:
                 //zoom and center to the track layouts
                 map.zoomToExtent(feature.geometry.getBounds());
 
+                // Handle clicks near the track
+                map.events.register("click", map, function(e) {
+
+                    // Convert clicked pixel to lon/lat in map projection
+                    var lonlat = map.getLonLatFromViewPortPx(e.xy);
+
+                    // Convert to GPS coordinates (WGS84)
+                    lonlat.transform(pMP, pWGS);
+
+                    var clickedLon = lonlat.lon;
+                    var clickedLat = lonlat.lat;
+
+                    var nearestPoint = null;
+                    var nearestDistance = Infinity;
+
+                    // Find nearest stored track point
+                    for (var i = 0; i < trackPoints.length; i++) {
+
+                        var pointLon = trackPoints[i][0];
+                        var pointLat = trackPoints[i][1];
+
+                        var dx = clickedLon - pointLon;
+                        var dy = clickedLat - pointLat;
+
+                        // Simple squared distance
+                        var dist = dx * dx + dy * dy;
+
+                        if (dist < nearestDistance) {
+                            nearestDistance = dist;
+                            nearestPoint = trackPoints[i];
+                        }
+                    }
+
+                    // Tolerance threshold
+                    // Roughly ~0.0001 degrees ~= 11 meters
+                    if (nearestDistance < 0.0001 * 0.0001) {
+
+                        // Remove previous popup
+                        if (currentPopup) {
+                            map.removePopup(currentPopup);
+                            currentPopup.destroy();
+                        }
+
+                        var popupLonLat = new OpenLayers.LonLat(
+                            nearestPoint[0],
+                            nearestPoint[1]
+                        );
+
+                        popupLonLat.transform(pWGS, pMP);
+
+                        currentPopup = new OpenLayers.Popup.FramedCloud(
+                            "TrackPoint",
+                            popupLonLat,
+                            null,
+                            "Latitude: " + nearestPoint[1].toFixed(6) +
+                            "<br>Longitude: " + nearestPoint[0].toFixed(6),
+                            null,
+                            true
+                        );
+
+                        map.addPopup(currentPopup);
+                    }
+                });
             }
         </script>
 
