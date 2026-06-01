@@ -119,10 +119,6 @@ class Osm:
             if list_values is not None and list_values != [] and len(list_values) > 0:
                 for i in list_values:
                     lat, lon = float(i[4]), float(i[5])
-                    cumul_dist = i[0]
-                    elevation  = i[1]
-                    speed      = i[3]
-                    heart_rate = i[6]
 
                     pointlist.append((lat,lon))
                     polyline.append("[%s, %s]" % (lon, lat))
@@ -137,24 +133,6 @@ class Osm:
                     if bounding_box['max_lon'] == None or lon > bounding_box['max_lon']:
                         bounding_box['max_lon'] = lon
 
-                    trackpoint_js.append(
-                        '''{
-                            lon:    %f,
-                            lat:    %f,
-                            ele:   "%.1f",
-                            speed: "%.2f",
-                            hr:    "%d",
-                            cumul_dist: "%.2f"
-                        }''' % (
-                            lon,
-                            lat,
-                            float(elevation),
-                            float(speed),
-                            int(heart_rate),
-                            float(cumul_dist)
-                        )
-                    )
-
                 points,levels = Points.encodePoints(pointlist)
                 points = points.replace("\\","\\\\")
                 laps = activity.laps
@@ -166,6 +144,27 @@ class Osm:
                             time, _("Distance"), activity.distance, self.uc.unit_distance)
                 startinfo = html.escape(startinfo) #Encode for html
                 finishinfo = html.escape(finishinfo) #Encode for html
+
+                for pt in activity.tracklist:
+                    trackpoint_js.append(
+                        '''{
+                            lon:  %f,
+                            lat:  %f,
+                            ele: "%.1f",
+                            hr:  "%d",
+                            speed:        "%.2f",
+                            elapsed_time: "%.0f",
+                            cumul_dist:   "%.2f"
+                        }''' % (
+                            pt['lon'],
+                            pt['lat'],
+                            pt['ele'],
+                            pt['hr'],
+                            pt['velocity'],
+                            pt['time_elapsed'],
+                            pt['elapsed_distance']
+                        )
+                    )
 
                 self.createHtml_osm(polyline, startinfo, finishinfo, laps, attrlist, linetype, bounding_box, trackpoint_js)
             else:
@@ -650,7 +649,8 @@ class Osm:
                             "<br>Elevation: " + nearestPoint.ele + " m" +
                             "<br>Speed: "     + nearestPoint.speed + " km/h" +
                             "<br>HR: "        + nearestPoint.hr + " bpm" +
-                            "<br>Distance: "  + nearestPoint.cumul_dist,
+                            "<br>Distance: "  + nearestPoint.cumul_dist +
+                            "<br>Elapsed: "   + formatElapsedTime(nearestPoint.elapsed_time),
                             null,
                             true
                         );
@@ -658,6 +658,25 @@ class Osm:
                         map.addPopup(currentPopup);
                     }
                 });
+
+                function formatElapsedTime(seconds) {
+
+                    seconds = Math.round(seconds);
+
+                    var hours = Math.floor(seconds / 3600);
+                    var minutes = Math.floor((seconds % 3600) / 60);
+                    var secs = seconds % 60;
+
+                    if (hours > 0) {
+                        return hours + "h " + minutes + "m " + secs + "s";
+                    }
+
+                    if (minutes > 0) {
+                        return minutes + "m " + secs + "s";
+                    }
+
+                    return secs + "s";
+                }
             }
         </script>
 
