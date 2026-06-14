@@ -150,17 +150,17 @@ class Osm:
                         '''{
                             lon:  %f,
                             lat:  %f,
-                            ele: "%.1f",
-                            hr:  "%d",
-                            speed:        "%.2f",
+                            ele:  %s,
+                            hr:   %s,
+                            speed: %s,
                             elapsed_time: "%.0f",
                             cumul_dist:   "%.2f"
                         }''' % (
                             pt['lon'],
                             pt['lat'],
-                            pt['ele'],
-                            pt['hr'],
-                            pt['velocity'],
+                            "null" if pt['ele'] is None else "%.1f" % pt['ele'],
+                            "null" if pt['hr']  is None else "%d"   % pt['hr'],
+                            "null" if pt['velocity'] is None else "%.2f" % pt['velocity'],
                             pt['time_elapsed'],
                             pt['elapsed_distance']
                         )
@@ -640,17 +640,30 @@ class Osm:
 
                         popupLonLat.transform(pWGS, pMP);
 
+                        var popupText =
+                            "Latitude: "      + nearestPoint.lat.toFixed(6) +
+                            "<br>Longitude: " + nearestPoint.lon.toFixed(6);
+
+                        if (nearestPoint.ele !== null) {
+                            popupText += "<br>Elevation: " + nearestPoint.ele + " m";
+                        }
+
+                        if (nearestPoint.speed !== null) {
+                            popupText += "<br>Speed: " + nearestPoint.speed + " km/h";
+                        }
+
+                        if (nearestPoint.hr !== null) {
+                            popupText += "<br>HR: " + nearestPoint.hr + " bpm";
+                        }
+
+                        popupText += "<br>Distance: " +  nearestPoint.cumul_dist + " km";
+                        popupText += "<br>Elapsed: "  +  formatElapsedTime(nearestPoint.elapsed_time);
+
                         currentPopup = new OpenLayers.Popup.FramedCloud(
                             "TrackPoint",
                             popupLonLat,
                             null,
-                            "Latitude: "      + nearestPoint.lat.toFixed(6) +
-                            "<br>Longitude: " + nearestPoint.lon.toFixed(6) +
-                            "<br>Elevation: " + nearestPoint.ele + " m" +
-                            "<br>Speed: "     + nearestPoint.speed + " km/h" +
-                            "<br>HR: "        + nearestPoint.hr + " bpm" +
-                            "<br>Distance: "  + nearestPoint.cumul_dist +
-                            "<br>Elapsed: "   + formatElapsedTime(nearestPoint.elapsed_time),
+                            popupText,
                             null,
                             true
                         );
